@@ -67,18 +67,33 @@ int cmpfunc(const void *a, const void *b){
 }
 
 /* 
-   Count unique values in array of observation times
+   Counts number of observed failures
+*/
+int count_failures(int B[], int n){
+	int n_failures = 0;
+	int i;
+	for(i=0;i<n;i++){
+		if(B[i] == 1){
+			n_failures++;
+		}
+	}
+	return(n_failures);
+}
+
+/* 
+   Count unique values in unsorted array
    Used to know what size of array to create 
 */
-int count_unique(double A[], int n){
+int count_unique(double Af[], int nf){
 
-	int i = 0;
+	int i;
 	int unique = 0;
 
-	for(i; i < n; i++){
-		if(A[i] == A[i+1]){
+	for(i=0; i < nf; i++){
+		if(Af[i] == Af[i+1]){
 			continue;
-		} else{
+		} 
+		else{
 			unique++;
 		}
 	}
@@ -100,6 +115,7 @@ void fill_unique_array(double A[], double U[], int n){
 	}
 }
 
+void count_censored(double A[], int B[], double U[], n, nf)
 /* 
    Write data to output file
 */

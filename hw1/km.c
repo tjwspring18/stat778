@@ -5,6 +5,8 @@
    Spring 2018
    HW #1 submission: Kaplan-Meier estimator
 */
+/* TODO: change data structure to struct rather than a bunch of arrays */
+/* Will require reworking downstream functions as well */
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -23,10 +25,11 @@ int main(int argc, char *argv[]){
 	int iflag = 0, oflag = 0; 
 	char *iname, *oname; 
 	int c, i, j, q = 0;
+	int nf;
 	double s;
 	char *abort_message = "Program aborted before successful completion";
 	int n;
-	int nu;
+	int nfu;
 
 	//parse command line arguments
 	//required: -i input_file -o output_file
@@ -72,26 +75,37 @@ int main(int argc, char *argv[]){
 			printf("Read %d observations from input file\n", n);
 			printf("Computing point estimates\n");
 
-			//sort A into new array As
-			double *As = malloc(n * sizeof(double));
-			for(i=0; i < n; i++){
-				As[i] = A[i];
-			}
-			qsort(As, 200, sizeof(double), cmpfunc);
+			//count number of failure time observations
+			//not necessarily n of UNIQUE failure time observations
+			nf = count_failures(B, n);
 
-			//count number of unique failure times in As
-			nu = count_unique(As, n);
+			//create new array Af of length nf
+			//fill it with failure time observations
+			double *Af = malloc(nf * sizeof(double));
+
+			for(i=0; i < n; i++){
+				if(B[i] == 1){
+					Af[q] = A[i];
+					q++;
+				}
+			}
+
+			//sort Af in place 
+			//count number of unique failure times in Af
+			qsort(Af, nf, sizeof(double), cmpfunc);
+			nfu = count_unique(Af, nf);
 
 			//create new array U of that length
 			//copy unique failure times from As to U
-			double *U = malloc(nu * sizeof(double));
-			fill_unique_array(As, U, n);
+			double *U = malloc(nfu * sizeof(double));
+			fill_unique_array(Af, U, n);
 
-			//dont need As anymore
-			free(As);
+			//dont need Af anymore
+			free(Af);
 
-			//create array C of length nu 
+			//create array C of length nfu 
 			//calculate number censored at each unique time
+			//store in C
 			int *C = malloc(nu * sizeof(int));
 			for(i=0; i < nu; i++){
 				q = 0;
@@ -154,6 +168,7 @@ int main(int argc, char *argv[]){
 			//something is going wrong here 
 			//maybe has to do with D[i] being 0 for censored observations
 			//unique times should be only be for unique DEATH times
+			//need to fix the unique function
 			double *V = malloc(nu * sizeof(double));
 			for(i = 0; i < nu; i++){
 				s = 0;
@@ -179,6 +194,7 @@ int main(int argc, char *argv[]){
 			printf("Writing to output file: %s\n", oname);
 			write_data(oname, CIL, S, CIU, nu);
 
+			*/
 			exit(0);
 		
 		}
