@@ -5,8 +5,6 @@
    Spring 2018
    HW #1 submission: Kaplan-Meier estimator
 */
-//TODO: coming up one short (147). Problem probably is in count_unique.
-
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
@@ -92,7 +90,6 @@ int main(int argc, char *argv[]){
 			//count number of unique failure times in Af
 			qsort(Af, nf, sizeof(double), cmpfunc);
 			nfu = count_unique(Af, nf);
-			printf("%d\n", nfu);
 
 			//create new array U of that length
 			//copy unique failure times from Af to U
@@ -153,18 +150,23 @@ int main(int argc, char *argv[]){
 			double *CIL = malloc(nfu * sizeof(double));
 			for(i = 0; i < nfu; i++){
 				CIL[i] = S[i] - V[i]*1.96;
+				if(CIL[i] < 0){
+					CIL[i] = 0;
+				}
 			}
 
 			//95 percent CI, upper
 			double *CIU = malloc(nfu * sizeof(double));
 			for(i = 0; i < nfu; i++){
 				CIU[i] = S[i] + V[i]*1.96;
+				if(CIU[i] > 1){
+					CIU[i] = 1;
+				}
 			}
 
 			//write results
-			//be more verbose
 			printf("Writing to output file: %s\n", oname);
-			write_data(oname, CIL, S, CIU, nfu);
+			write_data(oname, U, R, D, S, V, CIL, CIU, nfu);
 
 			//clean up
 			free(CIU);

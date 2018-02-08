@@ -145,31 +145,17 @@ void calculate_risk_set(double A[], int R[], double U[],
 	}
 }
 
-/*void count_censored(double A[], int B[], int C[], 
-  double U[], int n, int nfu){
-
-  int i, j, c;
-
-  for(i=0; i < nfu; i++){
-  c = 0;
-  for(j=0; j < n; j++){
-  if(U[i] == A[j]){
-  c = c + (1-B[j]);
-  }
-  }
-  printf("%d\n", c);
-  }
-  }
- */
-
 /* 
    Write data to output file
  */
 void write_data(char *filename, 
-		int
-		double *CIL, 
-		double *S, 
-		double *CIU, 
+		double U[], 
+		int R[], 
+		int D[],
+		double S[],
+		double V[],
+		double CIL[],
+		double CIU[],
 		int n){
 
 	FILE *fp = fopen(filename, "w");
@@ -180,29 +166,20 @@ void write_data(char *filename,
 			"time",
 			"risk_set",
 			"failures",
-			"s(t)",
-			"std(s(t))",
+			"survival",
+			"se",
 			"lower95", 
 			"upper95");
 
 	for(i; i < n; i++){
-		fprintf(fp, "%lf,
-				%d,
-				%d,
-				%lf,
-				%lf
-				%lf,
-				%lf\n", 
+		fprintf(fp, "%lf,%d,%d,%lf,%lf,%lf,%lf\n", 
 				U[i],
 				R[i],
 				D[i],
 				S[i],
 				V[i],
 				CIL[i],
-				CIU[i])
-
-
-				);
+				CIU[i]);
 	}
 	fclose(fp);
 }
