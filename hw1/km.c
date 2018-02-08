@@ -5,14 +5,15 @@
    Spring 2018
    HW #1 submission: Kaplan-Meier estimator
 */
-/* TODO: change data structure to struct rather than a bunch of arrays */
-/* Will require reworking downstream functions as well */
+//TODO: coming up one short (147). Problem probably is in count_unique.
 
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
 #include<math.h>
 #include "misc.h"
+
+#define ABORT_MESSAGE "Program aborted before successful completion"
 
 int main(int argc, char *argv[]){
 	
@@ -25,11 +26,8 @@ int main(int argc, char *argv[]){
 	int iflag = 0, oflag = 0; 
 	char *iname, *oname; 
 	int c, i, j, q = 0;
-	int nf;
+	int n, nf, nfu;
 	double s;
-	char *abort_message = "Program aborted before successful completion";
-	int n;
-	int nfu;
 
 	//parse command line arguments
 	//required: -i input_file -o output_file
@@ -50,7 +48,7 @@ int main(int argc, char *argv[]){
 	if( (iflag = 0) || (oflag == 0)){
 
 		printf("Error: did not receive arguments -i input_file -o output_file\n");
-		printf("%s\n", abort_message);
+		printf("%s\n", ABORT_MESSAGE);
 		exit(1);
 
 	} else{
@@ -60,7 +58,7 @@ int main(int argc, char *argv[]){
 		//abort if it does not exist
 		if( access(iname, F_OK) == -1 ){
 			printf("Input file not found\n");
-			printf("%s\n", abort_message);
+			printf("%s\n", ABORT_MESSAGE);
 			exit(1);
 		} else{
 			//count lines in input file
@@ -90,87 +88,60 @@ int main(int argc, char *argv[]){
 				}
 			}
 
-			//sort Af in place 
+			//sort Af 
 			//count number of unique failure times in Af
 			qsort(Af, nf, sizeof(double), cmpfunc);
 			nfu = count_unique(Af, nf);
+			printf("%d\n", nfu);
 
 			//create new array U of that length
-			//copy unique failure times from As to U
+			//copy unique failure times from Af to U
+			//double check that this works by modifying input data
 			double *U = malloc(nfu * sizeof(double));
-			fill_unique_array(Af, U, n);
+			fill_unique_array(Af, U, nfu);
 
 			//dont need Af anymore
 			free(Af);
 
-			//create array C of length nfu 
-			//calculate number censored at each unique time
-			//store in C
-			int *C = malloc(nu * sizeof(int));
-			for(i=0; i < nu; i++){
-				q = 0;
-				for(j=0; j < n; j++){
-					if(U[i] == A[j]){
-						q = q + (1-B[j]);
-					}
-				}
-				C[i] = q;
-			}
-			
-			//create array D of length nu
-			//calculate number died at each unique time
-			int *D = malloc(nu * sizeof(int));
-			for(i=0; i < nu; i++){
-				q = 0;
-				for(j=0; j < n; j++){
-					if(U[i] == A[j]){
-						q = q + B[j];
-					}
-				}
-				D[i] = q;
-			}
-			
+			//create array D of length nfu
+			//calculate number failed at each unique failure time
+			int *D = malloc(nfu * sizeof(int));
+			count_failed(A, B, D, U, n, nfu);
+
+			//create array R of length nfu 
+			//calculate risk set at each unique failure time
+			//store in R
+			int *R = malloc(nfu * sizeof(int));
+			calculate_risk_set(A, R, U, n, nfu);
+
 			//dont need A or B anymore
 			free(A);
 			free(B);
 
-			//create array R of length nu
-			//calculate risk set at each unique time
-			int *R = malloc(nu * sizeof(int));
-			for(i = 0; i < nu; i++){
-				q = 0;
-				for(j = 0; j < i; j++){	
-					q = q + D[j] + C[j];
-				}
-				R[i] = n-q;
-			}
-
 			//marginal survival for each time
-			double *Sm = malloc(nu * sizeof(double));
-			for(i = 0; i < nu; i++){
+			double *Sm = malloc(nfu * sizeof(double));
+			for(i = 0; i < nfu; i++){
 				Sm[i] = ((double)R[i] - (double)D[i]) / (double)R[i];
 			}
 
 
 			//cumulative survival for each time 
-			double *S = malloc(nu * sizeof(double));
-			for(i = 0; i < nu; i++){
-				s = 1;
+			double *S = malloc(nfu * sizeof(double));
+			for(i = 0; i < nfu; i++){
+				s = 1.0;
 				for(j = 0; j < i; j++){	
-					s = s * Sm[j];
+					s *= Sm[j];
 				}
 				S[i] = s;
 			}
 
+			//get rid of Sm
+			free(Sm);
+
 			printf("Computing variance\n");
 
-			//stddev for each S(t)
-			//something is going wrong here 
-			//maybe has to do with D[i] being 0 for censored observations
-			//unique times should be only be for unique DEATH times
-			//need to fix the unique function
-			double *V = malloc(nu * sizeof(double));
-			for(i = 0; i < nu; i++){
+			double *V = malloc(nfu * sizeof(double));
+			for(i = 0; i < nfu; i++){
 				s = 0;
 				for(j = 0; j < i; j++){	
 					s = s + ((double)D[i] / ( (double)R[i] * ((double)R[i] - (double)D[i]) ));
@@ -179,22 +150,31 @@ int main(int argc, char *argv[]){
 			}
 
 			//95 percent CI, lower 
-			double *CIL = malloc(nu * sizeof(double));
-			for(i = 0; i < nu; i++){
+			double *CIL = malloc(nfu * sizeof(double));
+			for(i = 0; i < nfu; i++){
 				CIL[i] = S[i] - V[i]*1.96;
 			}
 
 			//95 percent CI, upper
-			double *CIU = malloc(nu * sizeof(double));
-			for(i = 0; i < nu; i++){
+			double *CIU = malloc(nfu * sizeof(double));
+			for(i = 0; i < nfu; i++){
 				CIU[i] = S[i] + V[i]*1.96;
 			}
 
 			//write results
+			//be more verbose
 			printf("Writing to output file: %s\n", oname);
-			write_data(oname, CIL, S, CIU, nu);
+			write_data(oname, CIL, S, CIU, nfu);
 
-			*/
+			//clean up
+			free(CIU);
+			free(CIL);
+			free(S);
+			free(V);
+			free(U);
+			free(D);
+			free(R);
+
 			exit(0);
 		
 		}
