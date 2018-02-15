@@ -13,6 +13,9 @@
 
 #define ABORT_MESSAGE "Program aborted before successful completion"
 
+
+//TODO: need to use transformation in paper
+
 int main(int argc, char *argv[]){
 	
 	//Print information about program
@@ -138,11 +141,16 @@ int main(int argc, char *argv[]){
 			printf("Computing variance\n");
 
 			double *V = malloc(nfu * sizeof(double));
+			//Greenwood's formula
+			//D_i = number of deaths at time t_i
+			//R_i = risk set at time t_i
 			for(i = 0; i < nfu; i++){
 				s = 0;
 				for(j = 0; j < i; j++){	
-					s = s + ((double)D[i] / ( (double)R[i] * ((double)R[i] - (double)D[i]) ));
+					s = s + (((double)D[i]) / ( (double)R[i] * ((double)R[i] - (double)D[i]) ));
 				}
+
+				//std
 				V[i] = sqrt(s * pow(S[i], 2));
 			}
 
