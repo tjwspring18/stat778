@@ -13,9 +13,6 @@
 
 #define ABORT_MESSAGE "Program aborted before successful completion"
 
-
-//TODO: need to use transformation in paper
-
 int main(int argc, char *argv[]){
 	
 	//Print information about program
@@ -140,41 +137,46 @@ int main(int argc, char *argv[]){
 
 			printf("Computing variance\n");
 
+			// Variance, Greenwood's formula
+			//
+			// Definitions
+			//
+			// V[i] = variance of KM estimator (what I am computing here)
+			// nfu  = number of unique failure times 
+			// D[i] = number of failures at time t_i
+			// R[i] = risk set at time t_i
+			// S[i] = KM estimator at time t_i 
 			double *V = malloc(nfu * sizeof(double));
-			//Greenwood's formula
-			//D_i = number of deaths at time t_i
-			//R_i = risk set at time t_i
 			for(i = 0; i < nfu; i++){
 				s = 0;
 				for(j = 0; j < i; j++){	
 					s = s + (((double)D[i]) / ( (double)R[i] * ((double)R[i] - (double)D[i]) ));
 				}
+				V[i] = s * pow(S[i], 2);
+			}
 
-				//std
-				V[i] = sqrt(s * pow(S[i], 2));
+			//standard error of KM estimator
+			//square root of variance calculated above
+			double *SE = malloc(nfu * sizeof(double));
+			for(i=0; i < nfu; i++){
+				SE[i] = sqrt(V[i]);
 			}
 
 			//95 percent CI, lower 
 			double *CIL = malloc(nfu * sizeof(double));
 			for(i = 0; i < nfu; i++){
-				CIL[i] = S[i] - V[i]*1.96;
-				if(CIL[i] < 0){
-					CIL[i] = 0;
-				}
+				CIL[i] = pow(S[i], exp( (-1.96*SE[i]) / (S[i]*log(S[i])) ));
 			}
 
 			//95 percent CI, upper
 			double *CIU = malloc(nfu * sizeof(double));
 			for(i = 0; i < nfu; i++){
-				CIU[i] = S[i] + V[i]*1.96;
-				if(CIU[i] > 1){
-					CIU[i] = 1;
-				}
+				CIU[i] = pow(S[i], exp( (1.96*SE[i]) / (S[i]*log(S[i])) ));
 			}
 
 			//write results
 			printf("Writing to output file: %s\n", oname);
-			write_data(oname, U, R, D, S, V, CIL, CIU, nfu);
+			write_data(oname, U, R, D, S, SE, CIL, CIU, nfu);
 
 			//clean up
 			free(CIU);
@@ -184,6 +186,7 @@ int main(int argc, char *argv[]){
 			free(U);
 			free(D);
 			free(R);
+			free(SE);
 
 			exit(0);
 		
