@@ -6,13 +6,20 @@
 \usepackage{graphicx}
 \graphicspath{}
 
-\title{STAT 778 Homework \#1: a \texttt{C} Implementation of the Kaplan-Meier
-Estimator}
+\title{STAT 778 Homework \#1: Kaplan-Meier Estimator in C\vspace{-2ex}}
 \author{Tom Wallace}
 
 \begin{document}
 
-\maketitle
+%\maketitle
+
+\begin{center}
+\LARGE STAT 778 HW 1: Kaplan-Meier Estimator in C
+
+\large Tom Wallace
+
+\large Spring 2018
+\end{center}
 
 \section{Program Structure}
 There are three files. \texttt{misc.c} and its associated header file contain
@@ -20,12 +27,11 @@ miscellaneous utility functions (e.g. to create a vector). \texttt{km.c} contain
 the \texttt{main} function and is where the more substantive code occurs.
 
 \section{Compiling the Program}
-The program uses the \texttt{math.h} standard library and so must be compiled
-with the \texttt{-lm} flag. The following is an example of compilation on a
-Linux system:
+The program must be compiled
+with the \texttt{-lm} flag. An example of compilation on a Linux system:
 
 \begin{center}
-\texttt{gcc km.c misc.c -lm}
+\texttt{gcc km.c misc.c -lm -o km}
 \end{center}
 
 \section{Using the Program}
@@ -38,14 +44,15 @@ file arguments on the command line. Example:
 \end{center}
 
 \section{Verification and Validation}
-This program's computed Kaplan-Meier estimates were compared to that obtained
-using the \texttt{survival} package in \texttt{R}. Nearly identical results were
-obtained, as visualized in Figure 1.
+This program's computed Kaplan-Meier estimates and 95\% confidence intervals 
+were compared to results obtained using the \texttt{survival} package in R. 
+My C program produces nearly identical results.
 
 \begin{center}
-\begin{figure}[h]
+\begin{figure}[h!]
 	\caption{Comparison of output}
-	\includegraphics{comparison}
+	\centering
+	\includegraphics[scale=0.50]{comparison}
 \end{figure}
 \end{center}
 \end{document}
