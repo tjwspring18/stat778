@@ -100,6 +100,7 @@ int count_unique(double Af[], int nf){
 	return(unique);
 }
 
+//store unique values from one array into another array
 void fill_unique_array(double Af[], double U[], int nfu){
 
 	int i = 1;
@@ -130,6 +131,7 @@ void count_failed(double A[], int B[], int D[],
 	}
 }
 
+//calculate risk set at each timestep
 void calculate_risk_set(double A[], int R[], double U[], 
 		int n, int nfu){
 

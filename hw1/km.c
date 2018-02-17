@@ -5,6 +5,7 @@
    Spring 2018
    HW #1 submission: Kaplan-Meier estimator
 */
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
@@ -137,26 +138,18 @@ int main(int argc, char *argv[]){
 
 			printf("Computing variance\n");
 
-			// Variance, Greenwood's formula
-			//
-			// Definitions
-			//
-			// V[i] = variance of KM estimator (what I am computing here)
-			// nfu  = number of unique failure times 
-			// D[i] = number of failures at time t_i
-			// R[i] = risk set at time t_i
-			// S[i] = KM estimator at time t_i 
+			//variance, Greenwood's formula
 			double *V = malloc(nfu * sizeof(double));
 			for(i = 0; i < nfu; i++){
 				s = 0;
 				for(j = 0; j < i; j++){	
-					s = s + (((double)D[i]) / ( (double)R[i] * ((double)R[i] - (double)D[i]) ));
+					s = s + (((double)D[j]) / ( (double)R[j] * ((double)R[j] - (double)D[j]) ));
 				}
 				V[i] = s * pow(S[i], 2);
 			}
 
 			//standard error of KM estimator
-			//square root of variance calculated above
+			//square root of variance 
 			double *SE = malloc(nfu * sizeof(double));
 			for(i=0; i < nfu; i++){
 				SE[i] = sqrt(V[i]);
