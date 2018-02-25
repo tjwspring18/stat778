@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<math.h>
 #include<gsl/gsl_rng.h>
 #include<gsl/gsl_randist.h>
@@ -22,25 +23,30 @@
    Usage:
    Output is printed to stdout - you can pipe to a text file
    E.g., ./hw2_2 > output.csv
- */
+*/
 
 void run_simulation(int n, double mu, double ss, int seed);
 
 int main(){
 
 	int n_iter = 1000;
+	int i;
 
 	printf("n, mean, var, SE_mean, SE_var, mean_lower95, mean_upper95, var_lower95, var_upper95\n");
 
-	int i;
+	// simulation with n=50
 	for(i=0; i < n_iter; i++){
-		run_simulation(50, -0.5, 2.0, (int) i);
+		run_simulation(50, -0.5, 2.0, rand());
 	}
+
+	// simulation with n=100
 	for(i=0; i < n_iter; i++){
-		run_simulation(100, -0.5, 2.0, (int) i);
+		run_simulation(100, -0.5, 2.0, rand());
 	}
+
+	// simulation with n=200
 	for(i=0; i < n_iter; i++){
-		run_simulation(200, -0.5, 2.0, (int) i);
+		run_simulation(200, -0.5, 2.0, rand());
 	}
 }
 
