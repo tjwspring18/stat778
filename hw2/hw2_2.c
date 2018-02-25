@@ -5,28 +5,56 @@
 #include<gsl/gsl_statistics_double.h>
 
 /*
-   gcc -Wall -I/usr/include -c hw2_2.c && gcc -L/usr/lib/i386-linux-gnu hw2_2.o -o hw2_2
-*/
+   Tom Wallace <twalla11@masonlive.gmu.edu>
+   STAT 778
+   Spring 2018
+   HW 2, Problem 2
+
+   Compilation requires GNU Scientific Library (gsl)
+   
+   Compilation:
+   gcc -Wall -I/usr/include -c hw2_2.c
+   gcc -L/usr/lib/i386-linux-gnu -o hw2_2 -lgsl -lgslcblas -lm hw2_2.o
+ 
+   You may need to change the arguments passed to -I and -L depending on where
+   the gsl header files and libgsl, respectively, live on your system
+
+   Usage:
+   Output is printed to stdout - you can pipe to a text file
+   E.g., ./hw2_2 > output.csv
+ */
+
+void run_simulation(int n, double mu, double ss, int seed);
 
 int main(){
-	//process command line args
+
+	int n_iter = 1000;
+
+	printf("n, mean, var, SE_mean, SE_var, mean_lower95, mean_upper95, var_lower95, var_upper95\n");
+
+	int i;
+	for(i=0; i < n_iter; i++){
+		run_simulation(50, -0.5, 2.0, (int) i);
+	}
+	for(i=0; i < n_iter; i++){
+		run_simulation(100, -0.5, 2.0, (int) i);
+	}
+	for(i=0; i < n_iter; i++){
+		run_simulation(200, -0.5, 2.0, (int) i);
+	}
+}
+
+void run_simulation(int n, double mu, double ss, int seed){
 
 	// set up rng
 	const gsl_rng_type *T;
 	gsl_rng *r;
-
 	gsl_rng_env_setup();
 	T = gsl_rng_default;
 	r = gsl_rng_alloc(T);
+	gsl_rng_set(r, seed);
 
-	// parameters for normal random variables
-	double mu = -0.5;
-	double ss = 2.0;
-
-	// number of RVs to generate
-	int n=50;
-
-	// create array in which to store normal RVs
+	// array in which to store normal RVs
 	double *A = malloc(n * sizeof(double));
 
 	// generate normal RVs and store in array
@@ -39,9 +67,12 @@ int main(){
 
 	// point estimate of mu
 	double mean = gsl_stats_mean(A, 1, n);
-	
+
 	// point estimate of ss
 	double var = gsl_stats_variance(A, 1, n);
+
+	// get rid of A
+	free(A);
 
 	// SE of mean
 	double se_mean = sqrt(var / n);
@@ -57,10 +88,5 @@ int main(){
 	double var_u = var + 1.96*se_var;
 	double var_l = var - 1.96*se_var;
 
-	/*
-	printf("Sample mean: %lf\n", mean);
-	printf("Sample variance: %lf\n", var);
-	printf("SE(sample mean): %lf\n", se_mean);
-	printf("SE(sample variance): %lf\n", se_var);
-	*/
+	printf("%d,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", n, mean, var, se_mean, se_var, mean_l, mean_u, var_l, var_u);
 }
