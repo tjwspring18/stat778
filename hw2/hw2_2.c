@@ -14,15 +14,15 @@
    Compilation requires GNU Scientific Library (gsl)
    
    Compilation:
-   gcc -Wall -I/usr/include -c hw2_2.c
-   gcc -L/usr/lib/i386-linux-gnu -o hw2_2 -lgsl -lgslcblas -lm hw2_2.o
+       gcc -Wall -I/usr/include -c hw2_2.c
+       gcc -L/usr/lib/i386-linux-gnu -o hw2_2 -lgsl -lgslcblas -lm hw2_2.o
  
    You may need to change the arguments passed to -I and -L depending on where
    the gsl header files and libgsl, respectively, live on your system
 
    Usage:
-   Output is printed to stdout - you can pipe to a text file
-   E.g., ./hw2_2 > output.csv
+       Output is printed to stdout - you probably want to pipe to a text file
+       Example: ./hw2_2 > output.csv
 */
 
 void run_simulation(int n, double mu, double ss, int seed);
@@ -90,7 +90,7 @@ void run_simulation(int n, double mu, double ss, int seed){
 	double mean_u = mean + 1.96*se_mean;
 	double mean_l = mean - 1.96*se_mean;
 
-	// 95% CI of sss
+	// 95% CI of var
 	double var_u = var + 1.96*se_var;
 	double var_l = var - 1.96*se_var;
 
