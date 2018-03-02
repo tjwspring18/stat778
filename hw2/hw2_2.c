@@ -11,19 +11,19 @@
    Spring 2018
    HW 2, Problem 2
 
-   Compilation requires GNU Scientific Library (gsl)
-   
-   Compilation:
-       gcc -Wall -I/usr/include -c hw2_2.c
-       gcc -L/usr/lib/i386-linux-gnu -o hw2_2 -lgsl -lgslcblas -lm hw2_2.o
- 
-   You may need to change the arguments passed to -I and -L depending on where
-   the gsl header files and libgsl, respectively, live on your system
+   Requires GNU Scientific Library (gsl)
 
-   Usage:
-       Output is printed to stdout - you probably want to pipe to a text file
-       Example: ./hw2_2 > output.csv
-*/
+Compilation:
+gcc -Wall -I/usr/include -c hw2_2.c
+gcc -L/usr/lib/i386-linux-gnu hw2_2.o -o hw2_2 -lgsl -lgslcblas -lm 
+
+You may need to change the arguments passed to -I and -L depending on where
+the gsl header files and libgsl, respectively, live on your system
+
+Usage:
+Output is printed to stdout - you probably want to pipe to a text file
+Example: ./hw2_2 > output.csv
+ */
 
 void run_simulation(int n, double mu, double ss, int seed);
 
