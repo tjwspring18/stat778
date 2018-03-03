@@ -6,14 +6,39 @@
 \begin{document}
 \maketitle
 
-\begin{table}
+\section{Introduction}
+This document describes a simulation study. The study consisted of generating
+statistics based on normal random variables and comparing the accuracy of these
+statistics to their theoretical expectation.
+
+\section{Methodology}
+Consider the normal random variable $X \sim N(-0.5, 2)$. For each simulation
+run, $n$ of such variables were randomly generated. Three different $n$ were
+used:  $n=50, 100, 200$. For each $n$, 1000 runs were conducted. On each run,
+the sample mean and sample variance were computed, as well as their respective standard errors and 95\%
+confidence interval. These statistics were averaged over the 1000 runs conducted
+for each $n$. The empirical coverage probability also was computed.
+
+\section{Results}
+Simulation results are presented in Table 1. The point estimates closely match
+the true parameter values. The standard errors of the point estimates decrease
+as $n$ increases. The empirical coverage probabilities are very near 95\%. 
+
+\begin{table}[h]
 	\centering
-	\caption{Simulation results}
-	\begin{tabular}{|lrrrr|}
+	\caption{Simulation results, average of 1000 runs}
+	\begin{tabular}{|rrrrrrr|}
 		\hline
-		& $\bar{x}$ & SE($\bar{x}$) & 95\% CI & ECP\\
+		$n$&Parameter&True Value&Estimate&SE& 95\% CI&CP(\%)\\
 		\hline
-		Gnat & 5 & 13.65 & (0, 5) & 84.7\\
+		50  & $\mu$ & -0.5 & -0.487   & 0.199& (-0.877, -0.097) & 95.6 \\
+		    & $\sigma^2$  & 2 & 1.999 & 0.404 & (1.207, 2.790)  & 95.0 \\
+		    &&&&&& \\
+		100 & $\mu$ & -0.5 & -0.496 & 0.141 & (-0.771, -0.220) & 94.3 \\
+		    & $\sigma^2$ & 2 & 1.990 & 0.283 & (1.435, 2.544) &  95.1\\
+		    &&&&&& \\
+		200 & $\mu$ & -0.5 & -0.498 & 0.100 & (-0.693, -0.302) & 94.9\\ 
+		    & $\sigma^2$ & 2 & 1.991 & 0.200 & (1.600, 2.382) & 94.4 \\
 		\hline
 	\end{tabular}
 \end{table}
