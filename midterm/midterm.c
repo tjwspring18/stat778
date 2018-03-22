@@ -9,31 +9,31 @@
 
 void generate_normal_vector(double A[], int n, double mu, double var, int seed);
 void generate_exp_vector(double A[], int n, double mu, int seed);
-void generate_contaminated_normal_vector(double A[], int n, double mu, double
-		var, int seed);
+void generate_contaminated_normal_vector(double A[], int n, double mu, double var, int seed);
 double t_statistic(double A[], double B[], int n_A, int n_B);
-double t_test(double t_statistic, int n);
-/*
-TODO: fix t_test
-TODO: Wilxocon
-*/
+double t_df(double A[], double B[], int n_A, int n_B);
+double t_sig(double t_statistic, double df);
+
 int main(){
 
+	//number in each group
+	int n = 10;
 
 	//initialize random number generator
 	time_t t;
 	srand((unsigned) time(&t));
 
-	int n = 10;
 
 	double *A = malloc(n * sizeof(double));
 	double *B = malloc(n * sizeof(double));
 	generate_normal_vector(A, n, 0, 1, rand());
 	generate_normal_vector(B, n, 0, 1, rand());
 	
+	/*
 	double t_score; 
 	t_score = t_statistic(A, B, n, n);
 	printf("%lf\n", t_score);
+	*/
 
 	//something wonky here
 	/*
@@ -65,7 +65,7 @@ void generate_normal_vector(double A[], int n, double mu, double var, int seed){
 	r = gsl_rng_alloc(T);
 	gsl_rng_set(r, seed);
 
-	// generate RVs and stash in A[]
+	// generate normal RVs and stash in A[]
 	int i;
 	for(i=0; i < n; i++){
 		double x = gsl_ran_gaussian(r, sqrt(var));
@@ -95,8 +95,8 @@ void generate_contaminated_normal_vector(double A[], int n, double mu, double va
 
 		double u = gsl_rng_uniform(r);
 
-		if(u < 0.02){
-			x += 10*mu;
+		if(u <= 0.02){
+			x += (10*mu);
 		} else{
 			x += mu;
 		}
@@ -126,6 +126,7 @@ void generate_exp_vector(double A[], int n, double mu, int seed){
 	gsl_rng_free(r);
 }
 
+// Calculate t-statistic by Welch's method
 double t_statistic(double A[], double B[], int n_A, int n_B){
 
 	double mean_A = gsl_stats_mean(A, 1, n_A);
@@ -134,14 +135,32 @@ double t_statistic(double A[], double B[], int n_A, int n_B){
 	double var_A = gsl_stats_variance_m(A, 1, n_A, mean_A);
 	double var_B = gsl_stats_variance_m(B, 1, n_B, mean_A);
 
-	double t = (mean_A - mean_B) / sqrt( (var_A / n_A) + (var_B / n_B) );
+	double t = (mean_A - mean_B) / sqrt( (var_A / (double)n_A) + (var_B / (double)n_B) );
 
 	return(t);
 }
 
-double t_test(double t_statistic, int n){
-	double t = abs(t_statistic);
+// Calculate degrees of freedom by Welch-Satterthwaite equation
+double t_df(double A[], double B[], int n_A, int n_B){
+
+	double var_A = gsl_stats_variance(A, 1, n_A);
+
+	double var_B = gsl_stats_variance(B, 1, n_B);
+	
+	double num = pow(((var_A / (double)n_A) + (var_B / (double)n_B)), 2)
+
+	double den = (pow((var_A / (double)n_A), 2) / ((double)n_A - 1)) + (pow((var_B / (double)n_B), 2) / ((double)n_B - 1))
+
+	double df = num / den;
+
+	return(df)
+}
+
+// Think about this more
+// Needs to be two-sided
+double t_sig(double t_statistic, double df){
+	double t = fabs(t_statistic);
 	double x;
-	x = gsl_cdf_tdist_Q(t, n-1);
+	x = gsl_cdf_tdist_Q(t, df);
 	return(x);
 }
