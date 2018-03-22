@@ -46,7 +46,7 @@ double u_norm_approx(double u, int n);
 int main(){
 
 	//number in each group
-	int n = 10;
+	int n = 100;
 
 	//initialize random number generator
 	time_t t;
@@ -68,52 +68,24 @@ int main(){
 	df.Rank = (double *)malloc(sizeof(double) * 2 * n);
 	populate_df(df, A, B, n);
 
-	//sort Observations and Source in descending order
+	//sort Observations and Source in ascending order
 	bsort(df, n);
 
 	//assign Rank
 	assign_rank(df, n);
 	
 	//calculate u statistic
-	double u_A, u_B;
+	//should be min(u_A, u_B)
+	double u_A, u_B, u, u_norm;
 	u_A = u_statistic(df, 0.0, n);
 	u_B = u_statistic(df, 1.0, n);
-	
-	double foo;
-	foo = t_sig(1.5, 20);
-	printf("%lf\n", foo);
-	
-	/*
-	int i;
-	for(i = 0; i < 20; i++){
-		printf("%lf, %lf, %lf\n", df.Observations[i], df.Source[i], df.Rank[i]);
+	if(u_A < u_B){
+		u = u_A;
+	} else{
+		u = u_B;
 	}
-	printf("%lf\n", u_A);
-	printf("%lf\n", u_B);
-	*/
-	/*
-	double t_score; 
-	t_score = t_statistic(A, B, n, n);
-	printf("%lf\n", t_score);
-	*/
-
-	//something wonky here
-	/*
-	double val;
-	val= t_test(t_score, n);
-	printf("%lf\n", val);
-	*/
-
-	/* Begin testing */
-	/*
-	for(i=0; i < 20; i++){
-		printf("%lf\n", A[i]);
-	}
-
-	double mean = gsl_stats_mean(A, 1, n);
-	printf("%lf\n", mean);
-	*/
-
+	u_norm = u_norm_approx(u, n);
+	
 	return(0);
 }
 
@@ -264,9 +236,9 @@ void bsort(struct DF df, int n){
 
 		for(i=1; i < two_n; i++){
 
-			if(df.Observations[i-1] < df.Observations[i]){
+			if(df.Observations[i-1] > df.Observations[i]){
 
-				//sort Observations in descending order
+				//sort Observations in ascending order
 				templf = df.Observations[i-1];
 				df.Observations[i-1] = df.Observations[i];
 				df.Observations[i] = templf;
@@ -283,7 +255,7 @@ void bsort(struct DF df, int n){
 	} while( n != 0);
 }
 
-//rank observations in descending order
+//rank observations in ascending order
 void assign_rank(struct DF df, int n){
 
 	int i;
@@ -300,14 +272,17 @@ void assign_rank(struct DF df, int n){
 double u_statistic(struct DF df, double source, int n){
 
 	int two_n = 2 * n;
-	int u = 0;
-	int i;
+	int r = 0;
+	int i, u;
 
 	for(i=0; i < two_n; i++){
 		if(df.Source[i] == source){
-			u += df.Rank[i];
+			r += df.Rank[i];
 		}
 	}
+
+	u = r - ((n * (n+1)) / 2);
+
 	return(u);
 }
 
@@ -319,7 +294,7 @@ double u_norm_approx(double u, int n){
 
 	mu = pow((double)n, 2) / 2;
 
-	std = sqrt((pow((double)n, 2) * (2 * (double)n + 1)) / 12);
+	std = sqrt((pow((double)n, 2) * ((2 * (double)n) + 1)) / 12);
 
 	z = (u - mu) / std;
 
