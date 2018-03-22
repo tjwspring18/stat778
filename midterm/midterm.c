@@ -1,9 +1,11 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
+#include<time.h>
 #include<gsl/gsl_rng.h>
 #include<gsl/gsl_randist.h>
 #include<gsl/gsl_statistics_double.h>
+#include<gsl/gsl_cdf.h>
 
 void generate_normal_vector(double A[], int n, double mu, double var, int seed);
 void generate_exp_vector(double A[], int n, double mu, int seed);
@@ -11,25 +13,34 @@ void generate_contaminated_normal_vector(double A[], int n, double mu, double
 		var, int seed);
 double t_statistic(double A[], double B[], int n_A, int n_B);
 double t_test(double t_statistic, int n);
-
+/*
+TODO: fix t_test
+TODO: Wilxocon
+*/
 int main(){
+
 
 	//initialize random number generator
 	time_t t;
 	srand((unsigned) time(&t));
 
-	int n = 100;
+	int n = 10;
 
 	double *A = malloc(n * sizeof(double));
 	double *B = malloc(n * sizeof(double));
 	generate_normal_vector(A, n, 0, 1, rand());
-	generate_normal_vector(B, n, 0.5, 1, rand());
+	generate_normal_vector(B, n, 0, 1, rand());
+	
 	double t_score; 
-	t_score = t_statistic(A, B, 100, 100);
+	t_score = t_statistic(A, B, n, n);
 	printf("%lf\n", t_score);
+
+	//something wonky here
+	/*
 	double val;
-	val= t_test(t_score, 100);
+	val= t_test(t_score, n);
 	printf("%lf\n", val);
+	*/
 
 	/* Begin testing */
 	/*
@@ -129,7 +140,8 @@ double t_statistic(double A[], double B[], int n_A, int n_B){
 }
 
 double t_test(double t_statistic, int n){
-	double test_score;
-	test_score = gsl_cdf_tdist_Q(t_statistic, n-1);
-	return(test_score);
+	double t = abs(t_statistic);
+	double x;
+	x = gsl_cdf_tdist_Q(t, n-1);
+	return(x);
 }
