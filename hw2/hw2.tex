@@ -1,17 +1,73 @@
 \documentclass{article}
 
+\usepackage{hyperref}
+
 \author{Tom Wallace}
 \title{STAT 778: Homework 2}
 
 \begin{document}
 \maketitle
 
-\section{Introduction}
+\section{Program Organization}
+
+Code for \textbf{Problem 1} is contained in \texttt{hw2\_1.c}. It relies upon the 
+\texttt{math.h} library and must be compiled with the \texttt{-lm} flag. An
+example compilation command is:
+
+\begin{center}
+	\texttt{gcc hw2\_1.c -o hw2\_1 -lm}
+\end{center}
+
+Once compiled, execution of \texttt{hw2\_1} requires one mandatory argument: the name of the
+data file to be read. An example command is:
+
+\begin{center}
+	\texttt{./hw2\_1 HW2\_2018.dat}
+\end{center}
+
+Code for \textbf{Problem 2} is contained in \texttt{hw2\_2.c}. The program
+requires the GNU Scientific Library (GSL), an
+open-source numerical library. It can be obtained from
+\url{www.gnu.org/software/gsl}; or, it can installed from most standard Linux
+package managers. An example command of this is:
+
+\begin{center}
+	\texttt{sudo apt-get install gsl-bin libgsl-dev}
+\end{center}
+
+Compilation of \texttt{hw2\_2.c} is best achieved in two steps. First, use the below
+command to compile the program but not link it. You may need to change the
+argument passed to the \texttt{-I} flag to wherever the \texttt{gsl} header
+files live on your computer. 
+
+\begin{center}
+	\texttt{gcc -I/usr/include -c hw2\_2.c}
+\end{center}
+
+This command should create an object file \texttt{hw2\_2.o}. Link this 
+object file to relevant libraries with the following command.
+You may need to change the argument passed to the \texttt{-L} flag to
+wherever \texttt{libgsl} lives on your computer.
+
+\begin{center}
+	\texttt{gcc -L/usr/lib hw2\_2.o -o hw2\_2 -lgsl -lgslcblas -lm}
+\end{center}
+
+Once successfully compiled, the program can be executed. It does not require any
+arguments. Output is comma-separated text printed to \texttt{stdout}. You likely want to pipe this
+output to a text file, as per the following command:
+
+\begin{center}
+	\texttt{./hw2\_2 > output.csv}
+\end{center}
+
+\section{Writeup of Problem 2}
+\subsection{Introduction}
 This document describes a simulation study. The study consisted of generating
 statistics based on normal random variables and comparing the accuracy of these
 statistics to their theoretical expectation.
 
-\section{Methodology}
+\subsection{Methodology}
 Consider the normal random variable $X \sim N(-0.5, 2)$. For each simulation
 run, $n$ of such variables were randomly generated. Three different $n$ were
 used:  $n=50, 100, 200$. For each $n$, 1000 runs were conducted. On each run,
@@ -19,7 +75,7 @@ the sample mean and sample variance were computed, as well as their respective s
 confidence interval. These statistics were averaged over the 1000 runs conducted
 for each $n$. The empirical coverage probability also was computed.
 
-\section{Results}
+\subsection{Results}
 Simulation results are presented in Table 1. The point estimates closely match
 the true parameter values. The standard errors of the point estimates decrease
 as $n$ increases. The empirical coverage probabilities are very near 95\%. 

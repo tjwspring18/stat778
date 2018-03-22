@@ -42,9 +42,11 @@ int main(int argc, char *argv[]){
 			printf("%s\n", ABORT_MESSAGE);
 			exit(1);
 		} else {
-
+			printf("Reading file %s\n", in);
+			
 			//count number of observations
 			n = count_lines(in);
+			printf("Read %d observations\n", n);
 
 			//create data structure 
 			struct Data data;
@@ -61,6 +63,7 @@ int main(int argc, char *argv[]){
 			
 			//calculate partial log likelihood with
 			//beta1=0.5 and beta2=-0.5
+			printf("Calculating log likelihood\n");
 			for(i=0; i<n; i++){
 
 				if(data.e[i] == 1){
