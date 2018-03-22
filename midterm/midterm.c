@@ -176,6 +176,7 @@ double t_statistic(double A[], double B[], int n){
 }
 
 // Welch-Satterthwaite equation to compute degrees of freedom for t-statistic
+//TODO: you fucked up the formula, fix it
 double t_df(double A[], double B[], int n){
 
 	double var_A, var_B, num, den, df;

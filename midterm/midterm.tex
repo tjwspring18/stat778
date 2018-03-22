@@ -1,0 +1,100 @@
+\documentclass{report}
+
+\usepackage{hyperref}
+
+\title{STAT 778: Midterm Exam}
+\author{Tom Wallace}
+
+\begin{document}
+
+\maketitle
+
+\section*{Preface: Program Organization and Compilation}
+
+Source code is contained in \texttt{midterm.c}. 
+The program requires the GNU Scientific Library (GSL), an
+open-source numerical library. It can be obtained from
+\url{www.gnu.org/software/gsl}; or, it can installed from most standard Linux
+package managers. An example command to achieve the latter is:
+
+\begin{center}
+	\texttt{sudo apt-get install gsl-bin libgsl-dev}
+\end{center}
+
+Compilation of \texttt{midterm.c} is best achieved in two steps. First, use the below
+command to compile the program but not link it. You may need to change the
+argument passed to the \texttt{-I} flag to wherever the \texttt{gsl} header
+files live on your computer. 
+
+\begin{center}
+	\texttt{gcc -I/usr/include -c midterm.c}
+\end{center}
+
+This command should create an object file \texttt{midterm.o}. Link this 
+object file to relevant libraries with the following command.
+You may need to change the argument passed to the \texttt{-L} flag to
+wherever \texttt{libgsl} lives on your computer.
+
+\begin{center}
+	\texttt{gcc -L/usr/lib midterm.o -o midterm -lgsl -lgslcblas -lm}
+\end{center}
+
+Once successfully compiled, the program can be executed. It does not require any
+arguments. Output is comma-separated text printed to \texttt{stdout}. You likely want to pipe this
+output to a text file, as per the following command:
+
+\begin{center}
+	\texttt{./midterm > output.csv}
+\end{center}
+
+\newpage
+
+\section*{Introduction}
+This study seeks to compare the performance of the two-sample t-test and the
+Wilcoxon rank-sum test. It uses simulation to do so. Data is randomly generated
+under different scenarios. For each scenario, the two methods are used to test the 
+null hypothesis of no difference of means against the simple alternate hypothesis. 
+The goal is to ascertain which method performs better by various criteria.
+
+The remainder of this document is organized into two sections. The
+\textbf{Methods} section provides more detail on how the two methods were
+implemented and how their performance was compared. The \textbf{Simulation
+Study} section presents output data and results.
+
+\section*{Methods}
+
+\subsection*{Tests for Difference of Means}
+The study compares the performance of two different tests of means. The first
+is \textbf{Welch's t-test}. This test assumes that the two populations
+are independent (i.e. unpaired), that they have normal distributions, and that
+they may have unequal variances. Although Welch's t-test is
+possible to perform with different population sizes, this study only examined
+the case of equal population sizes. The test statistic $t$ is calculated as:
+\begin{equation}
+t = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{\frac{s^2_1}{n_1} + \frac{s^2_2}{n_2}}}
+\end{equation}
+
+with $\bar{X}_i$, $s^2_i$, and $n_i$ denoting the sample mean, sample variance, and
+sample size of group $i$. The degrees of freedom for the $t$ test statistic are
+calculated by the Welch-Sattherthwaite equation:
+
+\begin{equation}
+df \approx \frac{\left(\frac{s^2_1}{n_1} + \frac{s^2_2}{n_2}
+\right)^2}{\frac{s^4_1}{n^2_1(n_1 - 1)} + \frac{s^4_2}{n^2_2(n_2 - 1)}}
+\end{equation}
+
+The second is the \textbf{Wilcoxon rank-sum test} (sometimes also called
+the Mann-Whitney U test). This test---or at least this paper's implementation of
+it---assumes independent (i.e. unpaired) samples, but makes no parametric
+assumptions nor any assumptions regarding common variance. Observations from the
+two groups are pooled, and then sorted and ranked in ascending order (i.e. the smallest
+observation is 1, the second-smallest is 2, and so on). 
+\begin{itemize}
+\item Type I error
+\item Power 
+\item Robustness to sample size
+\item Robustness to false parametric assumptions
+\item Robustness to outliers
+\end{itemize}
+\end{document}
+
