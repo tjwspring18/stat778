@@ -7,12 +7,44 @@
 #include<gsl/gsl_statistics_double.h>
 #include<gsl/gsl_cdf.h>
 
+// Function prototypes and struct definitions
 void generate_normal_vector(double A[], int n, double mu, double var, int seed);
 void generate_exp_vector(double A[], int n, double mu, int seed);
 void generate_contaminated_normal_vector(double A[], int n, double mu, double var, int seed);
 double t_statistic(double A[], double B[], int n_A, int n_B);
 double t_df(double A[], double B[], int n_A, int n_B);
 double t_sig(double t_statistic, double df);
+struct DF{
+	double *Observations; 
+	double *Source;
+	double *Rank;
+};
+/* All of the below are TODO */
+void populate_df(struct DF df, double A[], double B[], int n_A, int n_B);
+void bsort(struct DF df, int n);
+void assign_rank(struct DF df, int n);
+double u_statistic(struct DF df, double source, int n);
+
+/*
+   Wilcoxon rank sum test
+
+   Make 2n x 3 array
+
+   Put RVs from A and B in first column
+
+   Put marker of whether came from A and B in second column
+
+   Sort array
+
+   Put rank of observation in 3rd column
+
+   Add up sum of ranks for A: call this U1
+
+   Use smaller of U1 or U2
+
+   Use normal approximation?
+
+ */
 
 int main(){
 
