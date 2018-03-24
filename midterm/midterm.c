@@ -48,21 +48,57 @@ void assign_rank(struct DF *df, int n);
 double u_statistic(struct DF *df, double source, int n);
 double u_norm_approx(double u, int n);
 double norm_sig(double zu);
-void run_simulation(double a, char d, int n, double m1, double s1, double m2, double s2);
+int wrs_test(struct DF *df, int n, double alpha);
+void run_simulation(double a, int d, int n, double m1, double s1, double m2, double s2, int seed);
 
 /*****             MAIN            *******/
 int main(){
 
-	//initialize random number generator
-	time_t t;
-	srand((unsigned) time(&t));
-	
-	//print headers
-	printf("alpha,distribution,n,m1,s1,m2,s2,w,t\n");
+	//set up rng
+	int t = time(NULL);
+	srand(t);
+	int seed;
 
-	//run simulation (output to STDOUT)
-	//TODO: it's running but not working correctly
-	run_simulation(0.05, 1.0, 100, 0.0, 1.0, 20.0, 1.0);
+	//simulation specifications to test:
+
+	//Number in each group
+	int N[] = {25, 50, 100};
+	
+	//Distribution: 1 = normal, 2 = contaminated normal, 3 = exponential
+	int D[] = {1,2,3};
+
+	//Group 2 means (group 1 mean always is 1.0)
+	//for exponential distribution this also is var
+	//for normal distributions, var always is 1.0
+	double M2[] = {1.0, 1.05, 1.10, 1.2};
+
+	//print header
+	printf("alpha,distribution,n,m1,s1,m2,s2,I_t,II_t,I_w,II_w\n");
+
+	//execute 1000 iterations for every specification
+	//prints to STDOUT
+	int n, d, m, i;
+	for(n=0; n<3; n++){
+		for(d=0; d<3; d++){
+			for(m=0; m<4; m++){
+				for(i=0; i<1000; i++){
+
+					seed = rand();
+
+					if(D[d] != 3){
+						run_simulation(0.05, D[d], N[n],
+								1.0, 1.0, M2[m],
+								1.0, seed);
+					} else{
+						run_simulation(0.05, D[d], N[n],
+								1.0, 1.0, M2[m],
+								M2[m], seed);
+					}
+				}
+			}
+		}
+	}
+
 	return(0);
 }
 
@@ -216,10 +252,10 @@ int t_test(double A[], double B[], int n, double alpha){
 	df = t_df(A, B, n);
 	sig = t_sig(t, df);
 
-	if(sig <= alpha){
-		return(0);
-	} else{
-		return(1);
+	if(sig > alpha){
+		return(0); //fail to reject null
+	} else{ 
+		return(1); //reject null
 	}
 }
 
@@ -354,10 +390,10 @@ int wrs_test(struct DF *df, int n, double alpha){
 	//two-sided p-value
 	sig = norm_sig(u_norm);
 
-	if(sig <= alpha){
-		return(0);
+	if(sig > alpha){
+		return(0); //fail to reject null
 	} else{
-		return(1);
+		return(1); //reject null
 	}
 }
 
@@ -368,9 +404,9 @@ int wrs_test(struct DF *df, int n, double alpha){
 // s1 = variance of group 1. not used if d = 3.
 // m2 = mean of group 2.
 // s2 = variance of group 2. not used if d = 3.
-void run_simulation(double a, char d, int n, double m1, double s1, double m2, double s2){
+void run_simulation(double a, int d, int n, double m1, double s1, double m2, double s2, int seed){
 
-	int t, w;
+	int t, w, I_t, II_t, I_w, II_w;
 
 	//generate vectors in which to store RVs
 	//we will use these for t-test
@@ -380,15 +416,15 @@ void run_simulation(double a, char d, int n, double m1, double s1, double m2, do
 
 	// generate random variables, store in A and B 
 	if(d == 1){
-		generate_normal_vector(A, n, m1, s1, rand());
-		generate_normal_vector(B, n, m2, s2, rand());
+		generate_normal_vector(A, n, m1, s1, seed);
+		generate_normal_vector(B, n, m2, s2, seed);
 	} else{
 		if(d == 2){
-			generate_contaminated_normal_vector(A, n, m1, s1, rand());
-			generate_contaminated_normal_vector(B, n, m1, s1, rand());
+			generate_contaminated_normal_vector(A, n, m1, s1, seed);
+			generate_contaminated_normal_vector(B, n, m1, s1, seed);
 		} else{
-			generate_exp_vector(A, n, m1, rand());
-			generate_exp_vector(B, n, m1, rand());
+			generate_exp_vector(A, n, m1, seed);
+			generate_exp_vector(B, n, m1, seed);
 		}
 	}
 
@@ -405,9 +441,38 @@ void run_simulation(double a, char d, int n, double m1, double s1, double m2, do
 	//conduct Wilcoxon rank-sum test
 	w = wrs_test(df, n, a);
 
-	//print results
-	printf("%lf,%d,%d,%lf,%lf,%lf,%lf,%d,%d\n",
-			a, d, n, m1, s1, m2, s2, w, t);
+	//check to see if type I error committed
+	//by t-test
+	if((m1 == m2) & (t == 1)){
+		I_t = 1;
+	} else{
+		I_t = 0;
+	}
+	//and by Wilcoxon rank sum test
+	if((m1 == m2) & (w == 1)){
+		I_w = 1;
+	} else{
+		I_w = 0;
+	}
+
+	//check to see if type II error committed 
+	//by t-test
+	if( (m1 != m2) & (t == 0)){
+		II_t = 1;
+	} else{
+		II_t = 0;
+	}
+
+	//and by Wilcoxon rank sum test
+	if( (m1 != m2) & (w == 0)){
+		II_w = 1;
+	} else{
+		II_w = 0;
+	}
+
+	//print simulation parameters and results
+	printf("%lf,%d,%d,%lf,%lf,%lf,%lf,%d,%d,%d,%d\n",
+			a, d, n, m1, s1, m2, s2, I_t, II_t, I_w, II_w);
 
 	// free memory
 	free(A);
