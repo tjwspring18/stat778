@@ -31,7 +31,10 @@ struct DF{
 	double *Observations; 
 	double *Source;
 	double *Rank;
+	size_t size;
 };
+struct DF* makeDF(size_t sz);
+void deleteDF(struct DF *df);
 void generate_normal_vector(double A[], int n, double mu, double var, int seed);
 void generate_exp_vector(double A[], int n, double mu, int seed);
 void generate_contaminated_normal_vector(double A[], int n, double mu, double var, int seed);
@@ -39,10 +42,10 @@ double t_statistic(double A[], double B[], int n);
 double t_df(double A[], double B[], int n);
 double t_sig(double t_statistic, double df);
 int t_test(double A[], double B[], int n, double alpha);
-void populate_df(struct DF df, double A[], double B[], int n);
-void bsort(struct DF df, int n);
-void assign_rank(struct DF df, int n);
-double u_statistic(struct DF df, double source, int n);
+void populate_df(struct DF *df, double A[], double B[], int n);
+void bsort(struct DF *df, int n);
+void assign_rank(struct DF *df, int n);
+double u_statistic(struct DF *df, double source, int n);
 double u_norm_approx(double u, int n);
 double norm_sig(double zu);
 void run_simulation(double a, char d, int n, double m1, double s1, double m2, double s2);
@@ -53,29 +56,36 @@ int main(){
 	//initialize random number generator
 	time_t t;
 	srand((unsigned) time(&t));
-
-	//sort Observations and Source in ascending order
-	bsort(df, n);
-
-	//assign Rank
-	assign_rank(df, n);
 	
-	//calculate u statistic
-	//should be min(u_A, u_B)
-	double u_A, u_B, u, u_norm;
-	u_A = u_statistic(df, 0.0, n);
-	u_B = u_statistic(df, 1.0, n);
-	if(u_A < u_B){
-		u = u_A;
-	} else{
-		u = u_B;
-	}
-	//normal approximation
-	u_norm = u_norm_approx(u, n);
+	//print headers
+	printf("alpha,distribution,n,m1,s1,m2,s2,w,t\n");
 
+	//run simulation (output to STDOUT)
+	//TODO: it's running but not working correctly
+	run_simulation(0.05, 1.0, 100, 0.0, 1.0, 20.0, 1.0);
 	return(0);
 }
 
+
+/*****             FUNCTION DEFINITIONS            *******/
+
+// dynamically create instance df of struct type DF
+struct DF* makeDF(size_t sz){
+	struct DF *df = malloc(sizeof(struct DF));
+	df->Observations = malloc(sz * sizeof(double));
+	df->Source = malloc(sz * sizeof(double));
+	df->Rank = malloc(sz * sizeof(double));
+	df->size = sz;
+	return(df);
+}
+
+// free all memory associated with df
+void deleteDF(struct DF *df){
+	free(df->Observations);
+	free(df->Source);
+	free(df->Rank);
+	free(df);
+}
 
 // fill vector with univariate normal random variables
 void generate_normal_vector(double A[], int n, double mu, double var, int seed){
@@ -214,24 +224,24 @@ int t_test(double A[], double B[], int n, double alpha){
 }
 
 // copy values from arrays to data structure
-void populate_df(struct DF df, double A[], double B[], int n){
+void populate_df(struct DF *df, double A[], double B[], int n){
 
 	int i;
 
 	for(i = 0; i < n; i++){
-		df.Observations[i] = A[i];
-		df.Source[i] = 0.0;
+		df->Observations[i] = A[i];
+		df->Source[i] = 0.0;
 	}
 
 	for(i = n; i < (2 * n); i++){
-		df.Observations[i] = B[i - n];
-		df.Source[i] = 1.0;
+		df->Observations[i] = B[i - n];
+		df->Source[i] = 1.0;
 	}
 }
 
 //bubblesort
 //computationally inefficient 
-void bsort(struct DF df, int n){
+void bsort(struct DF *df, int n){
 
 	int i, newn;
 	int two_n = 2 * n;
@@ -242,17 +252,17 @@ void bsort(struct DF df, int n){
 
 		for(i=1; i < two_n; i++){
 
-			if(df.Observations[i-1] > df.Observations[i]){
+			if(df->Observations[i-1] > df->Observations[i]){
 
 				//sort Observations in ascending order
-				templf = df.Observations[i-1];
-				df.Observations[i-1] = df.Observations[i];
-				df.Observations[i] = templf;
+				templf = df->Observations[i-1];
+				df->Observations[i-1] = df->Observations[i];
+				df->Observations[i] = templf;
 
 				//sort Source by Observations
-				templf = df.Source[i-1];
-				df.Source[i-1] = df.Source[i];
-				df.Source[i] = templf;
+				templf = df->Source[i-1];
+				df->Source[i-1] = df->Source[i];
+				df->Source[i] = templf;
 
 				newn = i;
 			}
@@ -262,28 +272,28 @@ void bsort(struct DF df, int n){
 }
 
 //rank observations in ascending order
-void assign_rank(struct DF df, int n){
+void assign_rank(struct DF *df, int n){
 
 	int i;
 	int two_n = 2 * n;
 
 	for(i=0; i < two_n; i++){
-		df.Rank[i] = (double)i + 1;
+		df->Rank[i] = (double)i + 1;
 	}
 }
 
 // U-statistic for Wilcoxon rank-sum test
 // two independent samples, no parametric assumptions
 // assumes equal sample sizes
-double u_statistic(struct DF df, double source, int n){
+double u_statistic(struct DF *df, double source, int n){
 
 	int two_n = 2 * n;
 	int r = 0;
 	int i, u;
 
 	for(i=0; i < two_n; i++){
-		if(df.Source[i] == source){
-			r += df.Rank[i];
+		if(df->Source[i] == source){
+			r += df->Rank[i];
 		}
 	}
 
@@ -322,6 +332,35 @@ double norm_sig(double zu){
 	return(two_sided_p);
 }
 
+// Wilcoxon rank-sum test
+// returns 0 if fail to reject null
+// returns 1 if reject null
+int wrs_test(struct DF *df, int n, double alpha){
+
+	double u, u_norm, sig;
+
+	//sort Observations and Source in ascending order
+	bsort(df, n);
+
+	//assign Rank
+	assign_rank(df, n);
+	
+	//calculate u statistic
+	u = u_statistic(df, 0.0, n);
+
+	//take normal approximation
+	u_norm = u_norm_approx(u, n);
+
+	//two-sided p-value
+	sig = norm_sig(u_norm);
+
+	if(sig <= alpha){
+		return(0);
+	} else{
+		return(1);
+	}
+}
+
 // a = alpha
 // d = distribution. 1 = normal, 2 = contaminated normal, 3 = exponential
 // n = number of samples in each group (implicitly assumes equal group size)
@@ -338,13 +377,6 @@ void run_simulation(double a, char d, int n, double m1, double s1, double m2, do
 	double *A = malloc(n * sizeof(double));
 	double *B = malloc(n * sizeof(double));
 
-	// initialize data structure
-	// we will use this for Wilcoxon rank-sum test
-	// TODO: get fancy with pointer for memory allocation
-	struct DF df;
-	df.Observations = (double *)malloc(sizeof(double) * 2 * n);
-	df.Source = (double *)malloc(sizeof(double) * 2 * n);
-	df.Rank = (double *)malloc(sizeof(double) * 2 * n);
 
 	// generate random variables, store in A and B 
 	if(d == 1){
@@ -360,14 +392,25 @@ void run_simulation(double a, char d, int n, double m1, double s1, double m2, do
 		}
 	}
 
+	// initialize data structure
+	// copy data from A and B to data structure
+	// we will use this for Wilcoxon rank-sum test
+	struct DF *df;
+	df = makeDF(2*n);
+	populate_df(df, A, B, n);
 
 	//conduct t-test
 	t = t_test(A, B, n, a);
 
 	//conduct Wilcoxon rank-sum test
+	w = wrs_test(df, n, a);
+
+	//print results
+	printf("%lf,%d,%d,%lf,%lf,%lf,%lf,%d,%d\n",
+			a, d, n, m1, s1, m2, s2, w, t);
 
 	// free memory
 	free(A);
 	free(B);
-	//free data structure
+	deleteDF(df);
 }
