@@ -35,9 +35,9 @@ struct DF{
 };
 struct DF* makeDF(size_t sz);
 void deleteDF(struct DF *df);
-void generate_normal_vector(double A[], int n, double mu, double var, int seed);
-void generate_exp_vector(double A[], int n, double mu, int seed);
-void generate_contaminated_normal_vector(double A[], int n, double mu, double var, int seed);
+void generate_normal_vector(double A[], int n, double mu, double var);
+void generate_exp_vector(double A[], int n, double mu);
+void generate_contaminated_normal_vector(double A[], int n, double mu, double var);
 double t_statistic(double A[], double B[], int n);
 double t_df(double A[], double B[], int n);
 double t_sig(double t_statistic, double df);
@@ -49,18 +49,22 @@ double u_statistic(struct DF *df, double source, int n);
 double u_norm_approx(double u, int n);
 double norm_sig(double zu);
 int wrs_test(struct DF *df, int n, double alpha);
-void run_simulation(double a, int d, int n, double m1, double s1, double m2, double s2, int seed);
+void run_simulation(double a, int d, int n, double m1, double s1, double m2, double s2);
 
 /*****             MAIN            *******/
 int main(){
 
 	//set up rng
-	int t = time(NULL);
-	srand(t);
-	int seed;
+	srand(time(NULL));
 
 	//simulation specifications to test:
+	printf("alpha,distribution,n,m1,s1,m2,s2,I_t,II_t,I_w,II_w\n");
+	int i;
+	for(i=0; i<100; i++){
+		run_simulation(0.05, 1, 20, 1.0, 1.0, 1.0, 1.0);
+	}
 
+	/*
 	//Number in each group
 	int N[] = {25, 50, 100};
 	
@@ -98,6 +102,7 @@ int main(){
 			}
 		}
 	}
+	*/
 
 	return(0);
 }
@@ -124,14 +129,14 @@ void deleteDF(struct DF *df){
 }
 
 // fill vector with univariate normal random variables
-void generate_normal_vector(double A[], int n, double mu, double var, int seed){
+void generate_normal_vector(double A[], int n, double mu, double var){
 
 	const gsl_rng_type *T;
 	gsl_rng *r;
 	gsl_rng_env_setup();
 	T = gsl_rng_default;
 	r = gsl_rng_alloc(T);
-	gsl_rng_set(r, seed);
+	gsl_rng_set(r, rand());
 
 	int i;
 	for(i=0; i < n; i++){
@@ -145,14 +150,14 @@ void generate_normal_vector(double A[], int n, double mu, double var, int seed){
 
 // fill vector with univariate normal random variables
 // each variable has a 2% chance of having 10x mu value
-void generate_contaminated_normal_vector(double A[], int n, double mu, double var, int seed){
+void generate_contaminated_normal_vector(double A[], int n, double mu, double var){
 
 	const gsl_rng_type *T;
 	gsl_rng *r;
 	gsl_rng_env_setup();
 	T = gsl_rng_default;
 	r = gsl_rng_alloc(T);
-	gsl_rng_set(r, seed);
+	gsl_rng_set(r, rand());
 
 	int i;
 	for(i=0; i < n; i++){
@@ -173,14 +178,14 @@ void generate_contaminated_normal_vector(double A[], int n, double mu, double va
 }
 
 // fill vector with exponential random variables
-void generate_exp_vector(double A[], int n, double mu, int seed){
+void generate_exp_vector(double A[], int n, double mu){
 
 	const gsl_rng_type *T;
 	gsl_rng *r;
 	gsl_rng_env_setup();
 	T = gsl_rng_default;
 	r = gsl_rng_alloc(T);
-	gsl_rng_set(r, seed);
+	gsl_rng_set(r, rand());
 
 	int i;
 	for(i=0; i < n; i++){
@@ -200,6 +205,8 @@ double t_statistic(double A[], double B[], int n){
 
 	mean_A = gsl_stats_mean(A, 1, n);
 	mean_B = gsl_stats_mean(B, 1, n);
+
+	printf("%lf, %lf\n", mean_A, mean_B);
 
 	var_A = gsl_stats_variance(A, 1, n);
 	var_B = gsl_stats_variance(B, 1, n);
@@ -404,9 +411,10 @@ int wrs_test(struct DF *df, int n, double alpha){
 // s1 = variance of group 1. not used if d = 3.
 // m2 = mean of group 2.
 // s2 = variance of group 2. not used if d = 3.
-void run_simulation(double a, int d, int n, double m1, double s1, double m2, double s2, int seed){
+void run_simulation(double a, int d, int n, double m1, double s1, double m2, double s2){
 
 	int t, w, I_t, II_t, I_w, II_w;
+
 
 	//generate vectors in which to store RVs
 	//we will use these for t-test
@@ -416,15 +424,15 @@ void run_simulation(double a, int d, int n, double m1, double s1, double m2, dou
 
 	// generate random variables, store in A and B 
 	if(d == 1){
-		generate_normal_vector(A, n, m1, s1, seed);
-		generate_normal_vector(B, n, m2, s2, seed);
+		generate_normal_vector(A, n, m1, s1);
+		generate_normal_vector(B, n, m2, s2);
 	} else{
 		if(d == 2){
-			generate_contaminated_normal_vector(A, n, m1, s1, seed);
-			generate_contaminated_normal_vector(B, n, m1, s1, seed);
+			generate_contaminated_normal_vector(A, n, m1, s1);
+			generate_contaminated_normal_vector(B, n, m1, s1);
 		} else{
-			generate_exp_vector(A, n, m1, seed);
-			generate_exp_vector(B, n, m1, seed);
+			generate_exp_vector(A, n, m1);
+			generate_exp_vector(B, n, m1);
 		}
 	}
 
@@ -437,6 +445,7 @@ void run_simulation(double a, int d, int n, double m1, double s1, double m2, dou
 
 	//conduct t-test
 	t = t_test(A, B, n, a);
+	printf("t: %d\n", t);
 
 	//conduct Wilcoxon rank-sum test
 	w = wrs_test(df, n, a);
