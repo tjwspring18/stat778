@@ -75,7 +75,7 @@ is \textbf{Welch's t-test}. This test assumes that the two populations
 are independent (i.e. unpaired), that they have normal distributions, and that
 they may have unequal variances. The test statistic $t$ is calculated as:
 \begin{equation}
-t = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{\frac{s^2_1}{n_1} + \frac{s^2_2}{n_2}}}
+	t = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{\frac{s^2_1}{n_1} + \frac{s^2_2}{n_2}}}
 \end{equation}
 
 with $\bar{X}_i$, $s^2_i$, and $n_i$ denoting the sample mean, sample variance, and
@@ -83,8 +83,8 @@ sample size of group $i$. The degrees of freedom for the $t$ test statistic are
 calculated by the Welch-Sattherthwaite equation:
 
 \begin{equation}
-df \approx \frac{\left(\frac{s^2_1}{n_1} + \frac{s^2_2}{n_2}
-\right)^2}{\frac{s^4_1}{n^2_1(n_1 - 1)} + \frac{s^4_2}{n^2_2(n_2 - 1)}}
+	df \approx \frac{\left(\frac{s^2_1}{n_1} + \frac{s^2_2}{n_2}
+	\right)^2}{\frac{s^4_1}{n^2_1(n_1 - 1)} + \frac{s^4_2}{n^2_2(n_2 - 1)}}
 \end{equation}
 
 The second is the \textbf{Wilcoxon rank-sum test}. This test makes no parametric
@@ -139,7 +139,8 @@ explored using simulation:
 \subsection*{Approach}
 The basic approach was to generate simulated data for two
 groups according to some specification; apply the t-test
-and Wilcoxon rank-sum test to the simulated data; and assess the type I error rate and power of each
+and Wilcoxon rank-sum test to the simulated data; and assess the empirical type I error rate 
+and empirical type II error rate of each
 test. Different specifications were used, with variation in group
 size, distribution (including presence of outliers), and true difference in
 means. Each specification was simulated 1000 times. The tested specifications 
@@ -153,8 +154,9 @@ included various combinations of the values presented in Table 1.
 		\hline
 		\textbf{Distribution} & \textbf{n} & \textbf{True difference}\\
 		Normal & 25 & None \\
-		Normal, 2\% chance of outlier ($\mu_{\mathrm{outlier}}=10\mu$) & 50 & $\mu_2 = 1.1 \mu_1$ \\
-		Exponential & 100 & $\mu_2 = 1.25 \mu_1$\\ 
+		Normal, 2\% chance of outlier ($\mu_{\mathrm{outlier}}=100\mu$) & 50 & $\mu_2 = 1.05 \mu_1$ \\
+		Exponential & 100 & $\mu_2 = 1.5 \mu_1$\\ 
+		 &  & $\mu_2 = 2 \mu_1$\\ 
 		\hline
 	\end{tabular}
 \end{table}
@@ -168,78 +170,68 @@ Quantitative results are presented in Table 2.
 	\caption{Simulation Results}
 	\vspace{1em}
 	\begin{threeparttable}
-	\begin{tabular}{|l r r r r r r r r r r r|}
-		\hline
-		& & & & & & & & & & & \\
-		\textbf{Distribution} & 
-		\textbf{n} & 
-		$\bm{\mu}_1$ &
-		$\bm{\sigma}^2_1$ & 
-		$\bm{\mu}_2$ &
-		$\bm{\sigma}^2_2$ & 
-		$\bar{\bm{\alpha}_t}$ & 
-		$\bar{\bm{\beta}}_t$ &
-		$1 - \bar{\bm{\beta}}_t$ & 
-		$\bar{\bm{\alpha}}_u$ & 
-		$\bar{\bm{\beta}}_u$ & 
-		$1 - \bar{\bm{\beta}}_u$ \\
-		
-		& & & & & & & & & & & \\
+		\begin{tabular}{|l r r r r r r r|}
+			\hline
+			& & & & & & & \\
+			\textbf{Distribution} & 
+			\textbf{n} & 
+			$\bm{\mu}_1$ &
+			$\bm{\mu}_2$ &
+			$\bar{\bm{\alpha}_t}$ & 
+			$\bar{\bm{\alpha}}_u$ & 
+			$\bar{\bm{\beta}}_t$ &
+			$\bar{\bm{\beta}}_u$ \\
 
-		Normal & 25 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.10 &     & foo & bar & foo & bar  & foo & bar \\
-		       &    &     &     & 1.25 &     & foo & bar & foo & bar & foo & bar \\
+			& & & & & & & \\
 
-		& & & & & & & & & & & \\
+			Normal &  25 & 1.00 & 1.00 & 0.04 & 0.05 & - & - \\ 
+			&  & & 1.05 & - & - & 0.95 & 0.96 \\ 
+			&  & & 1.50 & - & - & 0.58 & 0.59 \\ 
+			&  & & 2.00 & - & - & 0.07 & 0.07 \\ 
+			& & & & & & & \\
+			&  50 & 1.00 & 1.00 & 0.05 & 0.05 & - & - \\ 
+			&  & & 1.05 & - & - & 0.94 & 0.94 \\ 
+			&  & & 1.50 & - & - & 0.31 & 0.34 \\ 
+			&  & & 2.00 & - & - & 0.00 & 0.00 \\ 
+			& & & & & & & \\
+			& 100 & 1.00 & 1.00 & 0.05 & 0.05 & - & - \\ 
+			& & & 1.05 & - & - & 0.93 & 0.94 \\ 
+			& & & 1.50 & - & - & 0.06 & 0.07 \\ 
+			& & & 2.00 & - & - & 0.00 & 0.00 \\ 
+			& & & & & & & \\
+			Normal (contaminated) &  25 & 1.00 & 1.00 & 0.02 & 0.04
+			& - & - \\ 
+			&   & & 1.05 & - & - & 0.98 & 0.95 \\ 
+			&   & & 1.50 & - & - & 0.84 & 0.62 \\ 
+			&   & & 2.00 & - & - & 0.67 & 0.11 \\ 
+			& & & & & & & \\
+			&  50 & 1.00 & 1.00 & 0.01 & 0.05 & - & - \\ 
+			&   & & 1.05 & - & - & 0.98 & 0.94 \\ 
+			&   & & 1.50 & - & - & 0.91 & 0.34 \\ 
+			&   & & 2.00 & - & - & 0.85 & 0.00 \\ 
+			& & & & & & & \\
+			& 100 & 1.00 & 1.00 & 0.04 & 0.06 & - & - \\ 
+			&  & & 1.05 & - & - & 0.96 & 0.94 \\ 
+			&  & & 1.50 & - & - & 0.94 & 0.09 \\ 
+			&  & & 2.00 & - & - & 0.91 & 0.00 \\ 
+			& & & & & & & \\
+			Exponential &  25 & 1.00 & 1.00 & 0.04 & 0.05 & - & - \\ 
+			&   & & 1.05 & - & - & 0.96 & 0.95 \\ 
+			&   & & 1.50 & - & - & 0.73 & 0.76 \\ 
+			&   & & 2.00 & - & - & 0.39 & 0.48 \\ 
+			& & & & & & & \\
+			&  50 & 1.00 & 1.00 & 0.06 & 0.06 & - & - \\ 
+			&   & & 1.05 & - & - & 0.94 & 0.95 \\ 
+			&   & & 1.50 & - & - & 0.50 & 0.59 \\ 
+			&   & & 2.00 & - & - & 0.09 & 0.15 \\ 
+			& & & & & & & \\
+			& 100 & 1.00 & 1.00 & 0.04 & 0.04 & - & - \\ 
+			&  & & 1.05 & - & - & 0.94 & 0.94 \\ 
+			&  & & 1.50 & - & - & 0.19 & 0.33 \\ 
+			&  & & 2.00 & - & - & 0.00 & 0.01 \\ 
 
-		Normal & 50 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.10 &     & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.25 &     & foo & bar & foo & bar & foo & bar \\
-
-		& & & & & & & & & & & \\
-
-		Normal & 100 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.10 &      & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.25 &      & foo & bar & foo & bar & foo & bar \\
-
-		& & & & & & & & & & & \\
-
-		Normal (2\% outlier) & 25 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar& foo & bar \\
-		       &    &     &     & 1.10 &     & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.25 &     & foo & bar & foo & bar & foo & bar \\
-
-		& & & & & & & & & & & \\
-
-		Normal (2\% outlier) & 50 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.10 &     & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.25 &     & foo & bar & foo & bar & foo & bar \\
-
-		& & & & & & & & & & & \\
-
-		Normal (2\% outlier) & 100 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar& foo & bar \\ 
-		       &    &     &     & 1.10 &      & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.25 &      & foo & bar & foo & bar & foo & bar \\
-
-		& & & & & & & & & & & \\
-
-		Exponential & 25 & 1.0 & 1.0 & 1.00 & 1.00 & foo & bar & foo & bar& foo & bar \\
-		       &    &     &     & 1.10 & 1.10     & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.25 & 1.25    & foo & bar & foo & bar & foo & bar \\
-
-		& & & & & & & & & & & \\
-		
-		Exponential & 50 & 1.0 & 1.0 & 1.00 & 1.00 & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.10 & 1.10    & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.25 & 1.25    & foo & bar & foo & bar & foo & bar \\
-
-		& & & & & & & & & & & \\
-
-		Exponential & 100 & 1.0 & 1.0 & 1.00 & 1.00 & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.10 & 1.10      & foo & bar & foo & bar & foo & bar \\
-		       &    &     &     & 1.25 & 1.25     & foo & bar & foo & bar & foo & bar \\
-
-		\hline
-	\end{tabular}
+			\hline
+		\end{tabular}
 		\begin{tablenotes}
 		\item Each specification simulated 1000 times
 		\item $\bar{\alpha}_t$ = empirical Type I error probability, t-test

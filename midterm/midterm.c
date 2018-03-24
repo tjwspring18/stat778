@@ -58,26 +58,18 @@ int main(){
 	srand(time(NULL));
 
 	//simulation specifications to test:
-	printf("alpha,distribution,n,m1,s1,m2,s2,I_t,II_t,I_w,II_w\n");
-	int i;
-	for(i=0; i<100; i++){
-		run_simulation(0.05, 1, 20, 1.0, 1.0, 1.0, 1.0);
-	}
 
-	/*
 	//Number in each group
 	int N[] = {25, 50, 100};
 	
 	//Distribution: 1 = normal, 2 = contaminated normal, 3 = exponential
 	int D[] = {1,2,3};
 
-	//Group 2 means (group 1 mean always is 1.0)
-	//for exponential distribution this also is var
-	//for normal distributions, var always is 1.0
-	double M2[] = {1.0, 1.05, 1.10, 1.2};
+	//Group 2 means (group 1 mean always is 5.0)
+	double M2[] = {1.0, 1.05, 1.50, 2.0};
 
 	//print header
-	printf("alpha,distribution,n,m1,s1,m2,s2,I_t,II_t,I_w,II_w\n");
+	printf("distribution,n,m1,m2,I_t,II_t,I_w,II_w\n");
 
 	//execute 1000 iterations for every specification
 	//prints to STDOUT
@@ -87,22 +79,19 @@ int main(){
 			for(m=0; m<4; m++){
 				for(i=0; i<1000; i++){
 
-					seed = rand();
-
 					if(D[d] != 3){
 						run_simulation(0.05, D[d], N[n],
-								1.0, 1.0, M2[m],
-								1.0, seed);
+								1.0, 1.0, 
+								M2[m], 1.0);
 					} else{
 						run_simulation(0.05, D[d], N[n],
-								1.0, 1.0, M2[m],
-								M2[m], seed);
+								1.0, 1.0, 
+								M2[m], pow(M2[m], 2));
 					}
 				}
 			}
 		}
 	}
-	*/
 
 	return(0);
 }
@@ -167,7 +156,7 @@ void generate_contaminated_normal_vector(double A[], int n, double mu, double va
 		double u = gsl_rng_uniform(r);
 
 		if(u <= 0.02){
-			x += (10*mu);
+			x += (100*mu);
 		} else{
 			x += mu;
 		}
@@ -205,8 +194,6 @@ double t_statistic(double A[], double B[], int n){
 
 	mean_A = gsl_stats_mean(A, 1, n);
 	mean_B = gsl_stats_mean(B, 1, n);
-
-	printf("%lf, %lf\n", mean_A, mean_B);
 
 	var_A = gsl_stats_variance(A, 1, n);
 	var_B = gsl_stats_variance(B, 1, n);
@@ -429,10 +416,10 @@ void run_simulation(double a, int d, int n, double m1, double s1, double m2, dou
 	} else{
 		if(d == 2){
 			generate_contaminated_normal_vector(A, n, m1, s1);
-			generate_contaminated_normal_vector(B, n, m1, s1);
+			generate_contaminated_normal_vector(B, n, m2, s2);
 		} else{
 			generate_exp_vector(A, n, m1);
-			generate_exp_vector(B, n, m1);
+			generate_exp_vector(B, n, m2);
 		}
 	}
 
@@ -445,7 +432,6 @@ void run_simulation(double a, int d, int n, double m1, double s1, double m2, dou
 
 	//conduct t-test
 	t = t_test(A, B, n, a);
-	printf("t: %d\n", t);
 
 	//conduct Wilcoxon rank-sum test
 	w = wrs_test(df, n, a);
@@ -480,8 +466,8 @@ void run_simulation(double a, int d, int n, double m1, double s1, double m2, dou
 	}
 
 	//print simulation parameters and results
-	printf("%lf,%d,%d,%lf,%lf,%lf,%lf,%d,%d,%d,%d\n",
-			a, d, n, m1, s1, m2, s2, I_t, II_t, I_w, II_w);
+	printf("%d,%d,%lf,%lf,%d,%d,%d,%d\n",
+			d, n, m1, m2, I_t, II_t, I_w, II_w);
 
 	// free memory
 	free(A);
