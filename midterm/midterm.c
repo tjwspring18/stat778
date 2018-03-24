@@ -26,47 +26,33 @@ Usage:
 No arguments required, prints to stdout
 */
 
+/*****             FUNCTION PROTOTYPES            *******/
+struct DF{
+	double *Observations; 
+	double *Source;
+	double *Rank;
+};
 void generate_normal_vector(double A[], int n, double mu, double var, int seed);
 void generate_exp_vector(double A[], int n, double mu, int seed);
 void generate_contaminated_normal_vector(double A[], int n, double mu, double var, int seed);
 double t_statistic(double A[], double B[], int n);
 double t_df(double A[], double B[], int n);
 double t_sig(double t_statistic, double df);
-struct DF{
-	double *Observations; 
-	double *Source;
-	double *Rank;
-};
+int t_test(double A[], double B[], int n, double alpha);
 void populate_df(struct DF df, double A[], double B[], int n);
 void bsort(struct DF df, int n);
 void assign_rank(struct DF df, int n);
 double u_statistic(struct DF df, double source, int n);
 double u_norm_approx(double u, int n);
+double norm_sig(double zu);
+void run_simulation(double a, char d, int n, double m1, double s1, double m2, double s2);
 
+/*****             MAIN            *******/
 int main(){
-
-	//number in each group
-	int n = 100;
 
 	//initialize random number generator
 	time_t t;
 	srand((unsigned) time(&t));
-
-	//generate and stash RVs in respective arrays
-	//we will use these for t-test
-	double *A = malloc(n * sizeof(double));
-	double *B = malloc(n * sizeof(double));
-	generate_normal_vector(A, n, 0, 1, rand());
-	generate_normal_vector(B, n, 0, 1, rand());
-	
-	//initialize data structure
-	//copy data from vectors to data structure
-	//we will use this for Wilcoxon rank-sum test
-	struct DF df;
-	df.Observations = (double *)malloc(sizeof(double) * 2 * n);
-	df.Source = (double *)malloc(sizeof(double) * 2 * n);
-	df.Rank = (double *)malloc(sizeof(double) * 2 * n);
-	populate_df(df, A, B, n);
 
 	//sort Observations and Source in ascending order
 	bsort(df, n);
@@ -84,10 +70,12 @@ int main(){
 	} else{
 		u = u_B;
 	}
+	//normal approximation
 	u_norm = u_norm_approx(u, n);
-	
+
 	return(0);
 }
+
 
 // fill vector with univariate normal random variables
 void generate_normal_vector(double A[], int n, double mu, double var, int seed){
@@ -176,7 +164,6 @@ double t_statistic(double A[], double B[], int n){
 }
 
 // Welch-Satterthwaite equation to compute degrees of freedom for t-statistic
-//TODO: you fucked up the formula, fix it
 double t_df(double A[], double B[], int n){
 
 	double var_A, var_B, num, den, df;
@@ -206,6 +193,24 @@ double t_sig(double t_statistic, double df){
 	two_sided_p = above + below;
 
 	return(two_sided_p);
+}
+
+// t-test
+// returns 0 if fail to reject null
+// return 1 if reject null
+int t_test(double A[], double B[], int n, double alpha){
+
+	double t, df, sig;
+
+	t = t_statistic(A, B, n);
+	df = t_df(A, B, n);
+	sig = t_sig(t, df);
+
+	if(sig <= alpha){
+		return(0);
+	} else{
+		return(1);
+	}
 }
 
 // copy values from arrays to data structure
@@ -282,7 +287,7 @@ double u_statistic(struct DF df, double source, int n){
 		}
 	}
 
-	u = r - ((n * (n+1)) / 2);
+	u = r - (((double)n * ((double)n+1)) / 2);
 
 	return(u);
 }
@@ -300,4 +305,69 @@ double u_norm_approx(double u, int n){
 	z = (u - mu) / std;
 
 	return(z);
+}
+
+// two-sided p-value for n(0,1) random variable
+double norm_sig(double zu){
+
+	double z, above, below, two_sided_p;
+	
+	z = fabs(zu);
+
+	above = gsl_cdf_gaussian_Q(z, 1.0);
+	below = gsl_cdf_gaussian_P(-z, 1.0);
+	
+	two_sided_p = above + below;
+
+	return(two_sided_p);
+}
+
+// a = alpha
+// d = distribution. 1 = normal, 2 = contaminated normal, 3 = exponential
+// n = number of samples in each group (implicitly assumes equal group size)
+// m1 = mean of group 1
+// s1 = variance of group 1. not used if d = 3.
+// m2 = mean of group 2.
+// s2 = variance of group 2. not used if d = 3.
+void run_simulation(double a, char d, int n, double m1, double s1, double m2, double s2){
+
+	int t, w;
+
+	//generate vectors in which to store RVs
+	//we will use these for t-test
+	double *A = malloc(n * sizeof(double));
+	double *B = malloc(n * sizeof(double));
+
+	// initialize data structure
+	// we will use this for Wilcoxon rank-sum test
+	// TODO: get fancy with pointer for memory allocation
+	struct DF df;
+	df.Observations = (double *)malloc(sizeof(double) * 2 * n);
+	df.Source = (double *)malloc(sizeof(double) * 2 * n);
+	df.Rank = (double *)malloc(sizeof(double) * 2 * n);
+
+	// generate random variables, store in A and B 
+	if(d == 1){
+		generate_normal_vector(A, n, m1, s1, rand());
+		generate_normal_vector(B, n, m2, s2, rand());
+	} else{
+		if(d == 2){
+			generate_contaminated_normal_vector(A, n, m1, s1, rand());
+			generate_contaminated_normal_vector(B, n, m1, s1, rand());
+		} else{
+			generate_exp_vector(A, n, m1, rand());
+			generate_exp_vector(B, n, m1, rand());
+		}
+	}
+
+
+	//conduct t-test
+	t = t_test(A, B, n, a);
+
+	//conduct Wilcoxon rank-sum test
+
+	// free memory
+	free(A);
+	free(B);
+	//free data structure
 }

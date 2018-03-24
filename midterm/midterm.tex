@@ -2,6 +2,12 @@
 
 \usepackage{hyperref}
 
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\usepackage{bm}
+
+\usepackage{threeparttable}
 \title{STAT 778: Midterm Exam}
 \author{Tom Wallace}
 
@@ -67,9 +73,7 @@ Study} section presents output data and results.
 The study compares the performance of two different tests of means. The first
 is \textbf{Welch's t-test}. This test assumes that the two populations
 are independent (i.e. unpaired), that they have normal distributions, and that
-they may have unequal variances. Although Welch's t-test is
-possible to perform with different population sizes, this study only examined
-the case of equal population sizes. The test statistic $t$ is calculated as:
+they may have unequal variances. The test statistic $t$ is calculated as:
 \begin{equation}
 t = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{\frac{s^2_1}{n_1} + \frac{s^2_2}{n_2}}}
 \end{equation}
@@ -83,18 +87,166 @@ df \approx \frac{\left(\frac{s^2_1}{n_1} + \frac{s^2_2}{n_2}
 \right)^2}{\frac{s^4_1}{n^2_1(n_1 - 1)} + \frac{s^4_2}{n^2_2(n_2 - 1)}}
 \end{equation}
 
-The second is the \textbf{Wilcoxon rank-sum test} (sometimes also called
-the Mann-Whitney U test). This test---or at least this paper's implementation of
-it---assumes independent (i.e. unpaired) samples, but makes no parametric
+The second is the \textbf{Wilcoxon rank-sum test}. This test makes no parametric
 assumptions nor any assumptions regarding common variance. Observations from the
-two groups are pooled, and then sorted and ranked in ascending order (i.e. the smallest
-observation is 1, the second-smallest is 2, and so on). 
+two groups are pooled, and then ranked in ascending order. The sum of ranks is
+taken for a group (which does not matter). The $u$ statistic is given by:
+\begin{equation}
+	u_1 = R_1 - \frac{n_1(n_1 + 1)}{2} 
+\end{equation}
+
+where $R_1$ is the sum of ranks of group 1, and $n_1$ is the sample size of
+group 1. This study uses the normal approximation for groups with $n_i\geq25$:
+\begin{equation}
+	z = \frac{u - \mu_u}{\sigma_u}
+\end{equation}
+
+where $\mu_u = \frac{n_1n_2}{2}$ and $\sigma_u =
+\sqrt{\frac{n_1n_2(n_1+n_2+1)}{12}}$
+
+\subsection*{Hypothesis Testing}
+
+The null hypothesis is no difference in group means, with a two-sided alternate
+hypothesis:
+
+$$
+H_0: \mu_1 = \mu_2
+$$
+$$
+H_1: \mu_1 \neq \mu_2
+$$
+
+A significance level of $\alpha = 0.05$ is used.
+
+\subsection*{Measures of Performance}
+
+The two tests are compared using the following measures, all of which will be
+explored using simulation:
+
 \begin{itemize}
-\item Type I error
-\item Power 
-\item Robustness to sample size
-\item Robustness to false parametric assumptions
-\item Robustness to outliers
+	\item Type I error: at what rate does the test incorrectly reject the null?
+	\item Power: at what rate does the test correctly reject the null (for various
+		alternate parameter values)?
+	\item Robustness to sample size: how sensitive is the test (in term of type I
+		error and power) to sample size?
+	\item Parametric robustness: how sensitive is the test
+		(in terms of type I error and power) to different distributions?
+	\item Robustness to outliers: how sensitive is the test (in terms of
+		type I error and power) to outliers?
 \end{itemize}
+
+\section*{Simulation Study}
+\subsection*{Approach}
+The basic approach was to generate simulated data for two
+groups according to some specification; apply the t-test
+and Wilcoxon rank-sum test to the simulated data; and assess the type I error rate and power of each
+test. Different specifications were used, with variation in group
+size, distribution (including presence of outliers), and true difference in
+means. Each specification was simulated 1000 times. The tested specifications 
+included various combinations of the values presented in Table 1.
+
+\begin{table}[h]
+	\caption{Specification Values}
+	\vspace{1em}
+	\centering
+	\begin{tabular}{|l r r|}
+		\hline
+		\textbf{Distribution} & \textbf{n} & \textbf{True difference}\\
+		Normal & 25 & None \\
+		Normal, 2\% chance of outlier ($\mu_{\mathrm{outlier}}=10\mu$) & 50 & $\mu_2 = 1.1 \mu_1$ \\
+		Exponential & 100 & $\mu_2 = 1.25 \mu_1$\\ 
+		\hline
+	\end{tabular}
+\end{table}
+
+\subsection*{Results}
+
+Quantitative results are presented in Table 2.
+
+\begin{table}[h]
+	\centering
+	\caption{Simulation Results}
+	\vspace{1em}
+	\begin{threeparttable}
+	\begin{tabular}{|l r r r r r r r r r r r|}
+		\hline
+		\textbf{Distribution} & 
+		\textbf{n} & 
+		$\bm{\mu}_1$ &
+		$\bm{\sigma}^2_1$ & 
+		$\bm{\mu}_2$ &
+		$\bm{\sigma}^2_2$ & 
+		$\bar{\bm{\alpha}_t}$ & 
+		$\bar{\bm{\beta}}_t$ &
+		$1 - \bar{\bm{\beta}}_t$ & 
+		$\bar{\bm{\alpha}}_u$ & 
+		$\bar{\bm{\beta}}_u$
+		$1 - \bar{\bm{\beta}}_u$ \\
+
+		Normal & 25 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.10 &     & foo & bar & foo & bar  & foo & bar \\
+		       &    &     &     & 1.25 &     & foo & bar & foo & bar & foo & bar \\
+		Normal & 50 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.10 &     & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.25 &     & foo & bar & foo & bar & foo & bar \\
+		Normal & 100 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.10 &      & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.25 &      & foo & bar & foo & bar & foo & bar \\
+
+		Normal (2\% outlier) & 25 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar& foo & bar \\
+		       &    &     &     & 1.10 &     & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.25 &     & foo & bar & foo & bar & foo & bar \\
+		Normal (2\% outlier) & 50 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.10 &     & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.25 &     & foo & bar & foo & bar & foo & bar \\
+		Normal (2\% outlier) & 100 & 1.0 & 1.0 & 1.00 & 1.0 & foo & bar & foo & bar& foo & bar \\ 
+		       &    &     &     & 1.10 &      & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.25 &      & foo & bar & foo & bar & foo & bar \\
+
+		Exponential & 25 & 1.0 & 1.0 & 1.00 & 1.00 & foo & bar & foo & bar& foo & bar \\
+		       &    &     &     & 1.10 & 1.10     & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.25 & 1.25    & foo & bar & foo & bar & foo & bar \\
+		Exponential & 50 & 1.0 & 1.0 & 1.00 & 1.00 & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.10 & 1.10    & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.25 & 1.25    & foo & bar & foo & bar & foo & bar \\
+		Exponential & 100 & 1.0 & 1.0 & 1.00 & 1.00 & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.10 & 1.10      & foo & bar & foo & bar & foo & bar \\
+		       &    &     &     & 1.25 & 1.25     & foo & bar & foo & bar & foo & bar \\
+
+		\hline
+	\end{tabular}
+		\begin{tablenotes}
+		\item Each specification simulated 1000 times
+		\item $\bar{\alpha}_t$ = empirical Type I error probability, t-test
+		\item $\bar{\alpha}_u$ = empirical Type I error probability,
+			Wilcoxon rank-sum test
+		\item $\bar{\beta}_t$ = empirical power, t-test
+		\item $\bar{\beta}_u$ = empirical power, Wilcoxon rank-sum test
+		\end{tablenotes}
+	\end{threeparttable}
+\end{table}
+
+\section*{Comments Regarding Course}
+
+Overall, I have a positive impression of the class thus far. My C programming
+skills have gotten much sharper. I particularly appreciate that the instructor
+focuses on more on students learning useful skills and than on grades. The purpose of
+graduate school is to prepare students to do professional research, and so 
+I feel that grades are relatively superfluous. They can be a useful
+barometer of whether students are learning the skills needed for research, but the
+relationship is not that strong. In some other statistics courses (e.g.,
+anything taught by Dr. Sutton), the pressure 
+to do well on frequent, difficult homework and tests actually hurt my
+progress as a statistician. I got excellent grades, but did so by focusing more on 
+learning to crank out correct answers than on truly understanding the material. 
+This is a long way of saying: I really appreciate the different approach of this
+class. I put in just as much work, but am free to do so in a way that aids my
+long-term progress. 
+
+I hope that in the second half of the course we spend more time on algorithms.
+Techniques such as jackknife, bootstrap, EM, and the like are fundamental to
+modern statistics. Most of our work in the first half of the class has been on
+learning C, not learning statistical algorithms (we have been implementing very
+basic procedures). 
 \end{document}
 
