@@ -11,7 +11,7 @@
 Tom Wallace <twalla11@masonlive.gmu.edu>
 STAT 778
 Spring 2018
-Midterm
+Midterm exam
 
 Requires GNU Scientific Library (gsl)
 
@@ -26,7 +26,9 @@ Usage:
 No arguments required, prints to stdout
 */
 
-/*****             FUNCTION PROTOTYPES            *******/
+/**************************************************************************************
+               FUNCTION PROTOTYPES AND STRUCT DECLARATIONS
+ **************************************************************************************/
 struct DF{
 	double *Observations; 
 	double *Source;
@@ -51,7 +53,9 @@ double norm_sig(double zu);
 int wrs_test(struct DF *df, int n, double alpha);
 void run_simulation(double a, int d, int n, double m1, double s1, double m2, double s2);
 
-/*****             MAIN            *******/
+/**************************************************************************************
+                                    MAIN
+ **************************************************************************************/
 int main(){
 
 	//set up rng
@@ -97,7 +101,9 @@ int main(){
 }
 
 
-/*****             FUNCTION DEFINITIONS            *******/
+/**************************************************************************************
+                                    FUNCTIONS
+ **************************************************************************************/
 
 // dynamically create instance df of struct type DF
 struct DF* makeDF(size_t sz){
@@ -109,7 +115,7 @@ struct DF* makeDF(size_t sz){
 	return(df);
 }
 
-// free all memory associated with df
+// free all memory associated with struct DF
 void deleteDF(struct DF *df){
 	free(df->Observations);
 	free(df->Source);
@@ -466,6 +472,8 @@ void run_simulation(double a, int d, int n, double m1, double s1, double m2, dou
 	}
 
 	//print simulation parameters and results
+	//I_t, II_w, etc are indicator variables of whether Type I or Type II
+	//error committed by t-test or Wilcoxon rank-sum test
 	printf("%d,%d,%lf,%lf,%d,%d,%d,%d\n",
 			d, n, m1, m2, I_t, II_t, I_w, II_w);
 

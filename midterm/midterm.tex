@@ -3,7 +3,7 @@
 \usepackage{hyperref}
 
 \usepackage{geometry}
-\geometry{margin=1in}
+%\geometry{margin=1in}
 
 \usepackage{bm}
 
@@ -205,10 +205,10 @@ data with outliers. The power of the t-test is low and scarcely improves with
 increased true difference in means; in contrast, the Wilcoxon rank-sum test is
 much more powerful. This simulation finding makes theoretical sense: the
 t-test is based on means (which are sensitive to outliers) whereas the
-Wilcoxon rank-sum test is based on ordinal rankings (which are much less
+Wilcoxon rank-sum test is based on medians (which are much less
 sensitive to outliers). This finding is true for all tested sample sizes.
 
-The t-test seems to out-perform the Wilcoxon rank-sum test on exponential data,
+The t-test seems to be more powerful than the Wilcoxon rank-sum test on exponential data,
 particularly as sample size increases. This is surprising as normality is an
 assumption of the t-test. The Wilcoxon test performs about the same on the
 exponential data as it does on other distributions; this is theoretically
@@ -237,43 +237,35 @@ expected as the test makes no parametric assumptions.
 			&  & & 1.05 & - & - & 0.95 & 0.96 \\ 
 			&  & & 1.50 & - & - & 0.58 & 0.59 \\ 
 			&  & & 2.00 & - & - & 0.07 & 0.07 \\ 
-			& & & & & & & \\
 			&  50 & 1.00 & 1.00 & 0.05 & 0.05 & - & - \\ 
 			&  & & 1.05 & - & - & 0.94 & 0.94 \\ 
 			&  & & 1.50 & - & - & 0.31 & 0.34 \\ 
 			&  & & 2.00 & - & - & 0.00 & 0.00 \\ 
-			& & & & & & & \\
 			& 100 & 1.00 & 1.00 & 0.05 & 0.05 & - & - \\ 
 			& & & 1.05 & - & - & 0.93 & 0.94 \\ 
 			& & & 1.50 & - & - & 0.06 & 0.07 \\ 
 			& & & 2.00 & - & - & 0.00 & 0.00 \\ 
-			& & & & & & & \\
 			Normal (contaminated) &  25 & 1.00 & 1.00 & 0.02 & 0.04
 			& - & - \\ 
 			&   & & 1.05 & - & - & 0.98 & 0.95 \\ 
 			&   & & 1.50 & - & - & 0.84 & 0.62 \\ 
 			&   & & 2.00 & - & - & 0.67 & 0.11 \\ 
-			& & & & & & & \\
 			&  50 & 1.00 & 1.00 & 0.01 & 0.05 & - & - \\ 
 			&   & & 1.05 & - & - & 0.98 & 0.94 \\ 
 			&   & & 1.50 & - & - & 0.91 & 0.34 \\ 
 			&   & & 2.00 & - & - & 0.85 & 0.00 \\ 
-			& & & & & & & \\
 			& 100 & 1.00 & 1.00 & 0.04 & 0.06 & - & - \\ 
 			&  & & 1.05 & - & - & 0.96 & 0.94 \\ 
 			&  & & 1.50 & - & - & 0.94 & 0.09 \\ 
 			&  & & 2.00 & - & - & 0.91 & 0.00 \\ 
-			& & & & & & & \\
 			Exponential &  25 & 1.00 & 1.00 & 0.04 & 0.05 & - & - \\ 
 			&   & & 1.05 & - & - & 0.96 & 0.95 \\ 
 			&   & & 1.50 & - & - & 0.73 & 0.76 \\ 
 			&   & & 2.00 & - & - & 0.39 & 0.48 \\ 
-			& & & & & & & \\
 			&  50 & 1.00 & 1.00 & 0.06 & 0.06 & - & - \\ 
 			&   & & 1.05 & - & - & 0.94 & 0.95 \\ 
 			&   & & 1.50 & - & - & 0.50 & 0.59 \\ 
 			&   & & 2.00 & - & - & 0.09 & 0.15 \\ 
-			& & & & & & & \\
 			& 100 & 1.00 & 1.00 & 0.04 & 0.04 & - & - \\ 
 			&  & & 1.05 & - & - & 0.94 & 0.94 \\ 
 			&  & & 1.50 & - & - & 0.19 & 0.33 \\ 
@@ -303,18 +295,19 @@ focuses on more on students learning useful skills than on grades. The purpose o
 graduate school is to prepare students to do professional research, and so 
 I feel that grades are relatively superfluous. They can be a useful
 barometer of whether students are learning the skills needed for research, but the
-relationship is not that strong. In some other statistics courses, the pressure 
+relationship is not that strong. In some other courses, the pressure 
 to do well on frequent, difficult graded assignments actually hurt my
 progress as a statistician. I got excellent grades, but did so by focusing more on 
 learning to crank out correct answers than on truly understanding the material.
-This is a long way of saying: I really appreciate the different approach of this
-class. I put in just as much work, but am free to do so in a way that aids my
-long-term progress. 
+I really appreciate the different approach of this class. I put in just as much 
+work, but am free to do so in a way that aids my long-term progress. 
 
 I hope that in the second half of the course we spend more time on algorithms.
 Techniques such as jackknife, bootstrap, EM, and the like are fundamental to
 modern statistics. Most of our work in the first half of the class has been on
-learning C, not learning statistical algorithms (we have been implementing very
-basic procedures). 
+learning C, not learning statistical algorithms---we have been implemented very
+basic procedures such as Kaplan-Meier. I look forward to learning more advanced
+algorithms.
+
 \end{document}
 
