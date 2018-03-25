@@ -53,6 +53,28 @@ output to a text file, as per the following command:
 	\texttt{./midterm > output.csv}
 \end{center}
 
+The following R code is useful for analyzing the output data:
+\begin{flushleft}
+	\texttt{library(plyr)}
+
+	\texttt{df <- read.csv("output.csv", header = T)}
+	
+	\texttt{analysis <- ddply(df, 
+	     c("distribution", "n", "m1", "m2"), 
+	     summarize, 
+	     emp\_I\_t = mean(I\_t),
+	     emp\_I\_w = mean(I\_w),
+	     emp\_II\_t = mean(II\_t),
+	     emp\_II\_w = mean(II\_w))}
+	
+	\texttt{df2[df2\$distribution == 1, "distribution"] <- "Normal"}
+
+	\texttt{df2[df2\$distribution == 2, "distribution"] <- "Normal
+	(contaminated)"}
+
+	\texttt{df2[df2\$distribution == 3, "distribution"] <- "Exponential"}
+\end{flushleft}
+
 \newpage
 
 \section*{Introduction}
@@ -118,22 +140,22 @@ $$
 
 A significance level of $\alpha = 0.05$ is used.
 
-\subsection*{Measures of Performance}
-
-The two tests are compared using the following measures, all of which will be
-explored using simulation:
-
-\begin{itemize}
-	\item Type I error: at what rate does the test incorrectly reject the null?
-	\item Power: at what rate does the test correctly reject the null (for various
-		alternate parameter values)?
-	\item Robustness to sample size: how sensitive is the test (in term of type I
-		error and power) to sample size?
-	\item Parametric robustness: how sensitive is the test
-		(in terms of type I error and power) to different distributions?
-	\item Robustness to outliers: how sensitive is the test (in terms of
-		type I error and power) to outliers?
-\end{itemize}
+%\subsection*{Measures of Performance}
+%
+%The two tests are compared using the following measures, all of which will be
+%explored using simulation:
+%
+%\begin{itemize}
+%	\item Type I error: at what rate does the test incorrectly reject the null?
+%	\item Power: at what rate does the test correctly reject the null (for various
+%		alternate parameter values)?
+%	\item Robustness to sample size: how sensitive is the test (in term of type I
+%		error and power) to sample size?
+%	\item Parametric robustness: how sensitive is the test
+%		(in terms of type I error and power) to different distributions?
+%	\item Robustness to outliers: how sensitive is the test (in terms of
+%		type I error and power) to outliers?
+%\end{itemize}
 
 \section*{Simulation Study}
 \subsection*{Approach}
@@ -144,28 +166,55 @@ and empirical type II error rate of each
 test. Different specifications were used, with variation in group
 size, distribution (including presence of outliers), and true difference in
 means. Each specification was simulated 1000 times. The tested specifications 
-included various combinations of the values presented in Table 1.
+included various combinations of:
 
-\begin{table}[h]
-	\caption{Specification Values}
-	\vspace{1em}
-	\centering
-	\begin{tabular}{|l r r|}
-		\hline
-		\textbf{Distribution} & \textbf{n} & \textbf{True difference}\\
-		Normal & 25 & None \\
-		Normal, 2\% chance of outlier ($\mu_{\mathrm{outlier}}=100\mu$) & 50 & $\mu_2 = 1.05 \mu_1$ \\
-		Exponential & 100 & $\mu_2 = 1.5 \mu_1$\\ 
-		 &  & $\mu_2 = 2 \mu_1$\\ 
-		\hline
-	\end{tabular}
-\end{table}
+\begin{itemize}
+	\item \textbf{Distribution}
+		\begin{itemize}
+			\item Normal
+			\item Normal, with 2\% chance of outlier
+				($\mu_{\mathrm{outlier}} = 100\mu)$
+			\item Exponential
+		\end{itemize}
+	\item \textbf{Group size}
+		\begin{itemize}
+			\item $n=25$
+			\item $n=50$
+			\item $n=100$
+		\end{itemize}
+	\item \textbf{True difference in means}
+		\begin{itemize}
+			\item None ($\mu_2 = \mu_1$)
+			\item $\mu_2 = 1.05\mu_1$
+			\item $\mu_2 = 1.5\mu_1$
+			\item $\mu_2 = 2\mu_1$
+		\end{itemize}
+\end{itemize}
 
 \subsection*{Results}
 
-Quantitative results are presented in Table 2.
+Quantitative results are presented in Table 1. 
 
-\begin{table}[h]
+The t-test and Wilcoxon rank-sum
+test perform about the same on normally-distributed data. The power of the tests
+is low for small true difference in means and improves at a similar rate as the
+true difference in means becomes greater.
+
+The Wilcoxon rank-sum test greatly outperforms the t-test on normal
+data with outliers. The power of the t-test is low and scarcely improves with
+increased true difference in means; in contrast, the Wilcoxon rank-sum test is
+much more powerful. This simulation finding makes theoretical sense: the
+t-test is based on means (which are sensitive to outliers) whereas the
+Wilcoxon rank-sum test is based on ordinal rankings (which are much less
+sensitive to outliers). This finding is true for all tested sample sizes.
+
+The t-test seems to out-perform the Wilcoxon rank-sum test on exponential data,
+particularly as sample size increases. This is surprising as normality is an
+assumption of the t-test. The Wilcoxon test performs about the same on the
+exponential data as it does on other distributions; this is theoretically
+expected as the test makes no parametric assumptions.
+
+\begin{table}[h!]
 	\centering
 	\caption{Simulation Results}
 	\vspace{1em}
@@ -234,6 +283,8 @@ Quantitative results are presented in Table 2.
 		\end{tabular}
 		\begin{tablenotes}
 		\item Each specification simulated 1000 times
+		\item $\sigma^2 = 1$ for all normal and contaminated normal
+			distributions
 		\item $\bar{\alpha}_t$ = empirical Type I error probability, t-test
 		\item $\bar{\alpha}_u$ = empirical Type I error probability,
 			Wilcoxon rank-sum test
@@ -243,6 +294,7 @@ Quantitative results are presented in Table 2.
 	\end{threeparttable}
 \end{table}
 
+\clearpage
 \section*{Comments Regarding Course}
 
 Overall, I have a positive impression of the class thus far. My C programming
