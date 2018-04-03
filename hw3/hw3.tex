@@ -1,0 +1,118 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+
+\author{Tom Wallace}
+
+\title{STAT 778 HW 3}
+
+\begin{document}
+
+\maketitle
+
+\section*{Program Organization and Compilation}
+
+Source code is contained in \texttt{hw3.c}. 
+The program requires the GNU Scientific Library (GSL), an
+open-source numerical library. It can be obtained from
+\url{www.gnu.org/software/gsl}; or, it can installed from most standard Linux
+package managers. An example command to achieve the latter is:
+
+\begin{center}
+	\texttt{sudo apt-get install gsl-bin libgsl-dev}
+\end{center}
+
+Compilation of \texttt{hw3.c} is best achieved in two steps. First, use the below
+command to compile the program but not link it. You may need to change the
+argument passed to the \texttt{-I} flag to wherever the \texttt{gsl} header
+files live on your computer. 
+
+\begin{center}
+	\texttt{gcc -I/usr/include -c hw3.c}
+\end{center}
+
+This command should create an object file \texttt{hw3.o}. Link this 
+object file to relevant libraries with the following command.
+You may need to change the argument passed to the \texttt{-L} flag to
+wherever \texttt{libgsl} lives on your computer.
+
+\begin{center}
+	\texttt{gcc -L/usr/lib hw3.o -o hw3 -lgsl -lgslcblas -lm}
+\end{center}
+
+Once successfully compiled, the program can be executed. It requires one
+argument, the name of the input file. An example command is:
+
+\begin{center}
+	\texttt{./hw3 HW2\_2018.dat}
+\end{center}
+
+\section*{Technical Notes}
+
+This program finds maximum partial likelihood estimates (MPLE) for coefficients
+$\beta_j\ldots\beta_k=\bm{\beta}$ in the Cox proportional hazards model. This
+section provides the details of the computation of these estimates.
+
+The log-likelihood function for the Cox proportional hazards model is:
+
+\begin{equation}
+\log L(\bm{\beta}) = \sum_{i=1}^n \delta_i \left( \bm{\beta'x}_i - \log \sum_{l
+\in R(t_i)} \exp{(\bm{\beta' x}_l)}\right)
+\end{equation}
+
+with:
+\begin{tabular}{l c l}
+$t_i...t_n$ & = & unique observation times \\
+$\delta_i$ & = & indicator function, which returns 0 if observation $t_i$ is
+right-censored \\
+$\bm{x}_i$ & = & vector of covariates associated with individual observed at
+$t_i$ \\
+$\bm{\beta}$ & = & vector of coefficients associated with covariates \\
+$R(t_i)$ & = & risk set at $t_i$
+\end{tabular}
+
+\bigskip
+
+The first order partial derivatives are:
+
+\begin{equation}
+\frac{\partial \log L}{\partial \beta_j} = 
+\sum_{i=1}^n x_j - \frac{\sum_{l \in R(t_i)} x_{lj} \exp(\bm{\beta'x}_l)}{ \sum_{l
+\in R(t_i)} \exp(\bm{\beta'x}_l)}
+\end{equation}
+
+It can be shown that these functions are convex, and so the their roots---i.e.,
+the value of $\beta_k$ for which the above function equals 0---is the MPLE
+estimator $\hat{\beta}_k$. The Newton-Raphson algorithm is used to numerically
+estimate the roots (there is no closed-form solution). This algorithm also
+requires the derivatives of the function to be solved. Thus, we also need the
+second-order partial derivatives of the log likelihood function.
+
+\begin{equation}
+\frac{\partial^2 \log L}{\beta_j \beta_k} = 
+\sum_{i=1}^n 
+\frac{1}{\sum_{l \in R(t_i)} \exp(\bm{\beta'x}_l)}
+\left(
+\sum_l x_{lj}x_{lk} \exp(\bm{\beta'x}_l)- 
+\frac{
+\left(\sum_l x_{lj} \exp(\bm{\beta'x}_l)\right)
+\left(\sum_l x_{lk} \exp(\bm{\beta'x}_l)\right)
+}
+{\sum_l \exp(\bm{\beta'x}_l)}
+\right)
+\end{equation}
+
+The program uses these expressions to find the first- and second-order partial
+derivatives of the log likelihood function and supplies them to the
+Newton-Raphson algorithm.
+
+\section*{Verification and Validation}
+
+\end{document}
