@@ -19,17 +19,18 @@
 struct Data{
 	double *t;  // event time
 	int *e;     // event indicator
-	double *x0; // = 1 (intercept term)
 	double *x1; // covariate 1
 	double *x2; // covariate 2
 	size_t size;
 };
 struct Data* makeData(size_t sz);
 void deleteData(struct Data *data);
-
 int count_lines(char *f); 
 void read_data(char *f, struct Data *data);
 void bsort(struct Data *data, int n);
+double deriv_first_x1(struct Data *data, double b1, double b2);
+double deriv_first_x2(struct Data *data, double b1, double b2);
+double deriv_second_x1_x2(struct Data *data, double b1, double b2);
 
 /**********************************************************************
                                 MAIN
@@ -71,12 +72,67 @@ int main(int argc, char *argv[]){
 			//sort data by time
 			bsort(data, n);
 
+			double d1_x1, d1_x2, d2_x1_x2;
+
+			d1_x1 = deriv_first_x1(data, 0, 0);
+
+			d1_x2 = deriv_first_x2(data, 0, 0);
+
+			d2_x1_x2 = deriv_second_x1_x2(data, 0, 0);
+
+			printf("%lf %lf %lf\n", d1_x1, d1_x2, d2_x1_x2);
+
+			//deriv_first(data, 1);
+			//Newton-Raphson optimization to estimate betas
+
+			/*
+			   double J[2];
+			   double H[2][2];
+			   double b[2]={0,0};
+			   double bnew[2]={0,0};
+			   double q[2]={0,0}
+			   double e1, e2;
+
+			   do{
+
+			   J[0] = deriv_first("x1", data, beta);
+			   J[1] = deriv_first("x2", data, beta);
+
+			   H[0][0] = deriv_second(x1, x1, data, beta);
+			   H[0][1] = deriv_second(x1, x2, data, beta);
+			   H[1][0] = H[0][1];
+			   H[1][1] = deriv_second(x2, x2, data, beta);
+
+			   check for all positive eigenvalues
+
+			   take Cholesky composition, get inverse
+
+			   matrix multiply H_inv and J = q
+
+			   bnew[0] = b[0] - q[0]
+			   bnew[1] = b[1] - q[1]
+
+			   e1 = bnew[0] - b[0]
+			   e2 = bnew[1] - b[1]
+
+			   b[0] = bnew[0]
+			   b[1] = bnew[1]
+			   
+			   } while(e1 > 0.0001 & e2 > 0.0001)
+
+			   then get SE
+			   evaluate Hessian at final estimates of beta-hat
+			   ''the square roots of the diagonal elements of the
+			   inverse of the Hessian are are the estimated standard
+			   errors''
+
+			 */
+
 			/*
 			for(i=0; i<n; i++){
 				printf("%lf %d %lf %lf %lf\n",
 						data->t[i],
 						data->e[i],
-						data->x0[i],
 						data->x1[i],
 						data->x2[i]);
 			}
@@ -99,7 +155,6 @@ struct Data* makeData(size_t sz){
 	struct Data *data = malloc(sizeof(struct Data));
 	data->t = malloc(sz * sizeof(double));
 	data->e = malloc(sz * sizeof(int));
-	data->x0 = malloc(sz * sizeof(double));
 	data->x1 = malloc(sz * sizeof(double));
 	data->x2 = malloc(sz * sizeof(double));
 	data->size = sz;
@@ -110,7 +165,6 @@ struct Data* makeData(size_t sz){
 void deleteData(struct Data *data){
 	free(data->t);
 	free(data->e);
-	free(data->x0);
 	free(data->x1);
 	free(data->x2);
 	free(data);
@@ -148,7 +202,6 @@ void read_data(char *f, struct Data *data){
 	while(fscanf(fp, "%lf %d %lf %lf", &t, &e, &x1, &x2) != EOF){
 		data->t[i] = t;
 		data->e[i] = e;
-		data->x0[i] = 1;
 		data->x1[i] = x1;
 		data->x2[i] = x2;
 		i++;
@@ -196,4 +249,117 @@ void bsort(struct Data *data, int n){
 		}
 		n = newn;
 	} while( n != 0);
+}
+
+double deriv_first_x1(struct Data *data, double b1, double b2){
+
+	int i, j, n;
+	double d = 0;
+	double num, den;
+
+	//get number of observations
+	n = (int)data->size;
+
+	for(i=0; i < n; i++){
+
+		num = 0;
+		den = 0;
+
+		//if observation is not censored
+		if(data->e[i] == 1){
+
+			d += data->x1[i];
+
+			for(j=i; j < n; j++){
+				num += (data->x1[j] * exp((b1 * data->x1[j]) + (b2 * data->x2[j])));
+				den += exp((b1 * data->x1[j]) + (b2 * data->x2[j]));
+			}
+			
+			d -= (num / den);
+
+		} 
+	}
+
+	return(d);
+}
+
+double deriv_first_x2(struct Data *data, double b1, double b2){
+
+	int i, j, n;
+	double d = 0;
+	double num, den;
+
+	//get number of observations
+	n = (int)data->size;
+
+	for(i=0; i < n; i++){
+
+		num = 0;
+		den = 0;
+
+		//if observation is not censored
+		if(data->e[i] == 1){
+
+			d += data->x2[i];
+
+			for(j=i; j < n; j++){
+				num += (data->x2[j] * exp((b1 * data->x1[j]) + (b2 * data->x2[j])));
+				den += exp((b1 * data->x1[j]) + (b2 * data->x2[j]));
+			}
+			
+			d -= (num / den);
+
+		} 
+	}
+
+	return(d);
+}
+
+double deriv_second_x1_x2(struct Data *data, double b1, double b2){
+
+	int i, j, n;
+	double d = 0;
+	double num1, den1, num2a, num2b, den2, e;
+
+	//get number of observations
+	n = (int)data->size;
+
+	for(i=0; i<n; i++){
+
+		num1 = 0;
+		den1 = 0;
+		num2a = 0; 
+		num2b = 0;
+		den2 = 0;
+
+		//if observation is not censored
+		if(data->e[i] == 1){
+
+			for(j=i; j<n; j++){
+				
+				e = exp((b1 * data->x1[j]) + (b2 * data->x2[j]));
+
+				printf("%lf\n", e);
+
+				num1 += (data->x1[j] * data->x2[j] * e);
+
+				den1 += e;
+
+				num2a += (data->x1[j] * e);
+
+				num2b += (data->x2[j] * e);
+
+				num2b += pow(e, 2);
+
+			}
+
+
+			d += ((num1 / den1) - ((num2a * num2b) / den2));
+		}
+	}
+
+	d = (d * -1.0);
+
+	return(d);
+
 }

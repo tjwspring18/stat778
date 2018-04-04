@@ -19,35 +19,14 @@
 
 \section*{Program Organization and Compilation}
 
-Source code is contained in \texttt{hw3.c}. 
-The program requires the GNU Scientific Library (GSL), an
-open-source numerical library. It can be obtained from
-\url{www.gnu.org/software/gsl}; or, it can installed from most standard Linux
-package managers. An example command to achieve the latter is:
+Source code is contained in \texttt{hw3.c}. The program can be compiled with the
+following command:
 
 \begin{center}
-	\texttt{sudo apt-get install gsl-bin libgsl-dev}
+	\texttt{gcc hw3.c -o hw3 -lm }
 \end{center}
 
-Compilation of \texttt{hw3.c} is best achieved in two steps. First, use the below
-command to compile the program but not link it. You may need to change the
-argument passed to the \texttt{-I} flag to wherever the \texttt{gsl} header
-files live on your computer. 
-
-\begin{center}
-	\texttt{gcc -I/usr/include -c hw3.c}
-\end{center}
-
-This command should create an object file \texttt{hw3.o}. Link this 
-object file to relevant libraries with the following command.
-You may need to change the argument passed to the \texttt{-L} flag to
-wherever \texttt{libgsl} lives on your computer.
-
-\begin{center}
-	\texttt{gcc -L/usr/lib hw3.o -o hw3 -lgsl -lgslcblas -lm}
-\end{center}
-
-Once successfully compiled, the program can be executed. It requires one
+Executing the program requires one
 argument, the name of the input file. An example command is:
 
 \begin{center}
@@ -57,8 +36,8 @@ argument, the name of the input file. An example command is:
 \section*{Technical Notes}
 
 This program finds maximum partial likelihood estimates (MPLE) for coefficients
-$\beta_j\ldots\beta_k=\bm{\beta}$ in the Cox proportional hazards model. This
-section provides the details of the computation of these estimates.
+$\bm{\beta}$ in the Cox proportional hazards model. This
+section provides mathematical background on the computation of these estimates.
 
 The log-likelihood function for the Cox proportional hazards model is:
 
@@ -84,35 +63,114 @@ The first order partial derivatives are:
 
 \begin{equation}
 \frac{\partial \log L}{\partial \beta_j} = 
-\sum_{i=1}^n x_j - \frac{\sum_{l \in R(t_i)} x_{lj} \exp(\bm{\beta'x}_l)}{ \sum_{l
-\in R(t_i)} \exp(\bm{\beta'x}_l)}
+	\sum_{i=1}^n 
+	\delta_i
+	\left( 
+	x_{ij} - \frac{\sum_{l \in R(t_i)} x_{lj} \exp(\bm{\beta'x}_l)}
+	{ \sum_{l \in R(t_i)} \exp(\bm{\beta'x}_l)}
+	\right)
 \end{equation}
 
-It can be shown that these functions are convex, and so the their roots---i.e.,
-the value of $\beta_k$ for which the above function equals 0---is the MPLE
-estimator $\hat{\beta}_k$. The Newton-Raphson algorithm is used to numerically
+It can be shown that these functions are concave, and so the their roots---i.e.,
+the values of $\bm{\beta}$ for which the above functions equal $\bm{0}$---are the MPLE
+estimators $\hat{\bm{\beta}}$. The Newton-Raphson algorithm is used to numerically
 estimate the roots (there is no closed-form solution). This algorithm also
 requires the derivatives of the function to be solved. Thus, we also need the
 second-order partial derivatives of the log likelihood function.
 
 \begin{equation}
-\frac{\partial^2 \log L}{\beta_j \beta_k} = 
-\sum_{i=1}^n 
-\frac{1}{\sum_{l \in R(t_i)} \exp(\bm{\beta'x}_l)}
-\left(
-\sum_l x_{lj}x_{lk} \exp(\bm{\beta'x}_l)- 
+\frac{\partial^2 \log L}{\partial \beta_j \partial \beta_k} = 
+-
+\sum_{i=1}^n \
+\delta_i
+	\left( 
+	\frac{\sum_{l \in R(t_i)} x_{lj}x_{lk} \exp(\bm{\beta'x}_l)}
+	{\sum_{l \in R(t_i)} \exp(\bm{\beta'x}_l)}
+- 
 \frac{
-\left(\sum_l x_{lj} \exp(\bm{\beta'x}_l)\right)
-\left(\sum_l x_{lk} \exp(\bm{\beta'x}_l)\right)
+	\left(\sum_{l \in R(t_i)} x_{lj} \exp(\bm{\beta'x}_l)\right)
+	\left(\sum_{l \in R(t_i)} x_{lk} \exp(\bm{\beta'x}_l)\right)
 }
-{\sum_l \exp(\bm{\beta'x}_l)}
-\right)
+	{
+		\left(
+		\sum_{l \in R(t_i)} \exp(\bm{\beta'x}_l)
+		\right)^2
+		}
+	\right)
 \end{equation}
 
-The program uses these expressions to find the first- and second-order partial
-derivatives of the log likelihood function and supplies them to the
-Newton-Raphson algorithm.
+Once we have the Jacobian $\bm{J}$ and Hessian $\bm{H}$, the multivariate
+Newton-Raphson algorithm is:
+
+\begin{equation}
+	\bm{\beta}_{n+1} = \bm{\beta}_n -
+	\bm{H}^{-1}(\bm{\beta}_n)\bm{J}(\bm{\beta}_n)
+\end{equation}
+
+In our case of two covariates:
+\begin{equation}
+	\begin{bmatrix}
+		\beta_{1, n+1} \\
+		\beta_{2, n+1} \\
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		\beta_{1, n} \\
+		\beta_{2, n} \\
+	\end{bmatrix}
+	-
+	\begin{bmatrix}
+		\frac{\partial^2 \log L}{\partial \beta_1^2}\left( \beta_{1,
+		n}, \beta_{2, n} \right) &
+
+		\frac{\partial^2 \log L}{\partial \beta_1 \partial \beta_2}\left( \beta_{1,
+		n}, \beta_{2, n} \right) 
+		
+		\\
+
+		\frac{\partial^2 \log L}{\partial \beta_2 \beta_1}\left( \beta_{1,
+		n}, \beta_{2, n} \right) &
+
+		\frac{\partial^2 \log L}{\partial \beta_2^2}\left( \beta_{1,
+		n}, \beta_{2, n} \right) 
+	\end{bmatrix}^{-1}
+	\begin{bmatrix}
+		\frac{\partial \log L}{\partial \beta_1}\left( \beta_{1, n},
+		\beta_{2, n}\right) \\
+		\frac{\partial \log L}{\partial \beta_2} \left( \beta_{1, n},
+		\beta_{2, n} \right)\\
+	\end{bmatrix}
+\end{equation}
+
+Note that $\bm{H}$ is square and symmetric. If it is positive definite (and it
+is), the Cholesky decomposition can be used to efficiently obtain the inverse.
+
+The algorithm iterates until an arbitrary quality of approximation is obtained:
+\begin{equation}
+	\bm{\beta}_{n} - \bm{\beta}_{n-1} \leq \epsilon
+\end{equation}
 
 \section*{Verification and Validation}
+This program's results for $\bm{\hat{\beta}}$ were compared to those obtained using
+the \texttt{coxph} function from the \texttt{survival} package in R. As depicted
+in Table 1, the two are essentially identical.
+
+\begin{table}[h!]
+	\caption{Verification and validation}
+	\centering
+	\begin{tabular}{|l r r r r|}
+		\hline
+		& & & &\\
+		& $\hat{\beta}_1$ & $SE(\hat{\beta_1})$ & $\hat{\beta}_2$ & $SE(\hat{\beta_2})$ \\
+		& & & &\\
+		\hline
+		& & & &\\
+		\textbf{R \texttt{survival} package}  &           & & &           \\
+		& & & &\\
+		\textbf{This C program}               &           & & &       \\
+		& & & &\\
+		\hline
+	\end{tabular}
+\end{table}
 
 \end{document}
