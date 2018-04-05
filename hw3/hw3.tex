@@ -19,11 +19,32 @@
 
 \section*{Program Organization and Compilation}
 
-Source code is contained in \texttt{hw3.c}. The program can be compiled with the
-following command:
+Source code is contained in \texttt{hw3.c}. 
+The program requires the GNU Scientific Library (GSL), an
+open-source numerical library. It can be obtained from
+\url{www.gnu.org/software/gsl}; or, it can installed from most standard Linux
+package managers. An example command to achieve the latter is:
 
 \begin{center}
-	\texttt{gcc hw3.c -o hw3 -lm }
+	\texttt{sudo apt-get install gsl-bin libgsl-dev}
+\end{center}
+
+Compilation of \texttt{hw3.c} is best achieved in two steps. First, use the below
+command to compile the program but not link it. You may need to change the
+argument passed to the \texttt{-I} flag to wherever the \texttt{gsl} header
+files live on your computer. 
+
+\begin{center}
+	\texttt{gcc -I/usr/include -c hw3.c}
+\end{center}
+
+This command should create an object file \texttt{hw3.o}. Link this 
+object file to relevant libraries with the following command.
+You may need to change the argument passed to the \texttt{-L} flag to
+wherever \texttt{libgsl} lives on your computer.
+
+\begin{center}
+	\texttt{gcc -L/usr/lib hw3.o -o hw3 -lgsl -lgslcblas -lm}
 \end{center}
 
 Executing the program requires one
@@ -142,33 +163,35 @@ In our case of two covariates:
 	\end{bmatrix}
 \end{equation}
 
-Note that $\bm{H}$ is square and symmetric. If it is positive definite (and it
-is), the Cholesky decomposition can be used to efficiently obtain the inverse.
+The inverse Hessian $\bm{H}^{-1}$ is obtained using LU decomposition.
 
 The algorithm iterates until an arbitrary quality of approximation is obtained:
 \begin{equation}
 	\bm{\beta}_{n} - \bm{\beta}_{n-1} \leq \epsilon
 \end{equation}
 
+Standard error
+
 \section*{Verification and Validation}
-This program's results for $\bm{\hat{\beta}}$ were compared to those obtained using
+This program's output was compared to that obtained using
 the \texttt{coxph} function from the \texttt{survival} package in R. As depicted
 in Table 1, the two are essentially identical.
 
 \begin{table}[h!]
 	\caption{Verification and validation}
 	\centering
-	\begin{tabular}{|l r r r r|}
+	\begin{tabular}{|l r r r r r|}
 		\hline
-		& & & &\\
-		& $\hat{\beta}_1$ & $SE(\hat{\beta_1})$ & $\hat{\beta}_2$ & $SE(\hat{\beta_2})$ \\
-		& & & &\\
+		& & & & &\\
+		& $\hat{\beta}_1$ & $SE(\hat{\beta_1})$ & $\hat{\beta}_2$ &
+		$SE(\hat{\beta_2})$ & Log likelihood\\
+		& & & & &\\
 		\hline
-		& & & &\\
-		\textbf{R \texttt{survival} package}  &           & & &           \\
-		& & & &\\
-		\textbf{This C program}               &           & & &       \\
-		& & & &\\
+		& & & & &\\
+		\textbf{R \texttt{survival} package}&  &           & & &           \\
+		& & & & &\\
+		\textbf{This C program}      &         &           & & &       \\
+		& & & & &\\
 		\hline
 	\end{tabular}
 \end{table}

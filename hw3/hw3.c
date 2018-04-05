@@ -2,6 +2,9 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<math.h>
+#include<gsl/gsl_matrix.h>
+#include<gsl/gsl_linalg.h>
+#include<gsl/gsl_blas.h>
 #define ABORT_MESSAGE "Program aborting"
 #define BAD_ARGS "Wrong number of arguments passed"
 #define FNF "File not found"
@@ -14,7 +17,7 @@
  */
 
 /**********************************************************************
-                DATA STRUCTURES AND FUNCTION PROTOTYPES
+  DATA STRUCTURES AND FUNCTION PROTOTYPES
  **********************************************************************/
 struct Data{
 	double *t;  // event time
@@ -31,16 +34,20 @@ void bsort(struct Data *data, int n);
 double deriv_first_x1(struct Data *data, double b1, double b2);
 double deriv_first_x2(struct Data *data, double b1, double b2);
 double deriv_second_x1_x2(struct Data *data, double b1, double b2);
+double deriv_second_x1_x1(struct Data *data, double b1, double b2);
+double deriv_second_x2_x2(struct Data *data, double b1, double b2);
 
 /**********************************************************************
-                                MAIN
+  MAIN
  **********************************************************************/
 int main(int argc, char *argv[]){
 
 	static char *in;
 	static int n;
-	int i;
+	int i, s;
 	struct Data *data;
+	double e = 1;
+	double b1, b2;
 
 	// make sure input file argument passed
 	if(argc != 2){
@@ -72,54 +79,63 @@ int main(int argc, char *argv[]){
 			//sort data by time
 			bsort(data, n);
 
-			double d1_x1, d1_x2, d2_x1_x2;
+			//allocate matrices we'll need for Newton-Raphson
+			gsl_matrix *B = gsl_matrix_alloc(2,1);
+			gsl_matrix *Bnew = gsl_matrix_alloc(2,1);
+			gsl_matrix *J = gsl_matrix_alloc(2,1);
+			gsl_matrix *H = gsl_matrix_alloc(2,2);
+			gsl_matrix *H_inv = gsl_matrix_alloc(2,2);
+			gsl_matrix *prod = gsl_matrix_alloc(2,1);
+			gsl_matrix *diff = gsl_matrix_alloc(2,1);
 
-			d1_x1 = deriv_first_x1(data, 0, 0);
+			//initial guesses for betas are 0
+			gsl_matrix_set(B, 0, 0, 0);
+			gsl_matrix_set(B, 1, 0, 0);
 
-			d1_x2 = deriv_first_x2(data, 0, 0);
+			//Newton Raphson 
+			while(e > 10e-6){
 
-			d2_x1_x2 = deriv_second_x1_x2(data, 0, 0);
+				//get current values of beta
+				b1 = gsl_matrix_get(B, 0, 0);
+				b2 = gsl_matrix_get(B, 1, 0);
 
-			printf("%lf %lf %lf\n", d1_x1, d1_x2, d2_x1_x2);
+				//evaluate first derivatives at current
+				//estimates of beta1 and beta2
+				gsl_matrix_set(J, 0, 0, deriv_first_x1(data, b1, b2));
+				gsl_matrix_set(J, 1, 0, deriv_first_x2(data, b1, b2));
 
-			//deriv_first(data, 1);
-			//Newton-Raphson optimization to estimate betas
+				//evaluate second derivatives at current
+				//estimates of beta1 and beta2
+				gsl_matrix_set(H, 0, 0, deriv_second_x1_x1(data, b1, b2));
+				gsl_matrix_set(H, 0, 1, deriv_second_x1_x2(data, b1, b2));
+				gsl_matrix_set(H, 1, 0, deriv_second_x1_x2(data, b1, b2));
+				gsl_matrix_set(H, 1, 1, deriv_second_x2_x2(data, b1, b2));
+
+				//take inverse of H via LU decomposition
+				gsl_permutation *p = gsl_permutation_alloc(2);
+				gsl_linalg_LU_decomp(H, p, &s);
+				gsl_linalg_LU_invert(H, p, H_inv);
+				gsl_permutation_free(p);
+
+				//multiply H_inv and J
+				gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, H_inv, J, 0.0, prod);
+
+				//new betas = current betas - prod
+				gsl_matrix_set(Bnew, 0, 0, (gsl_matrix_get(B, 0, 0) - gsl_matrix_get(prod, 0, 0)));
+				gsl_matrix_set(Bnew, 1, 0, (gsl_matrix_get(B, 1, 0) - gsl_matrix_get(prod, 1, 0)));
+
+				//calculate difference between B and Bnew
+				gsl_matrix_set(diff, 0, 0, (gsl_matrix_get(B, 0, 0) - gsl_matrix_get(Bnew, 0, 0)));
+				gsl_matrix_set(diff, 1, 0, (gsl_matrix_get(B, 1, 0) - gsl_matrix_get(Bnew, 1, 0)));
+
+				//set beta equal to new beta
+				gsl_matrix_sub(B, prod);
+
+				//get error
+				e = fabs(gsl_matrix_max(diff));
+			}
 
 			/*
-			   double J[2];
-			   double H[2][2];
-			   double b[2]={0,0};
-			   double bnew[2]={0,0};
-			   double q[2]={0,0}
-			   double e1, e2;
-
-			   do{
-
-			   J[0] = deriv_first("x1", data, beta);
-			   J[1] = deriv_first("x2", data, beta);
-
-			   H[0][0] = deriv_second(x1, x1, data, beta);
-			   H[0][1] = deriv_second(x1, x2, data, beta);
-			   H[1][0] = H[0][1];
-			   H[1][1] = deriv_second(x2, x2, data, beta);
-
-			   check for all positive eigenvalues
-
-			   take Cholesky composition, get inverse
-
-			   matrix multiply H_inv and J = q
-
-			   bnew[0] = b[0] - q[0]
-			   bnew[1] = b[1] - q[1]
-
-			   e1 = bnew[0] - b[0]
-			   e2 = bnew[1] - b[1]
-
-			   b[0] = bnew[0]
-			   b[1] = bnew[1]
-			   
-			   } while(e1 > 0.0001 & e2 > 0.0001)
-
 			   then get SE
 			   evaluate Hessian at final estimates of beta-hat
 			   ''the square roots of the diagonal elements of the
@@ -127,19 +143,17 @@ int main(int argc, char *argv[]){
 			   errors''
 
 			 */
-
-			/*
-			for(i=0; i<n; i++){
-				printf("%lf %d %lf %lf %lf\n",
-						data->t[i],
-						data->e[i],
-						data->x1[i],
-						data->x2[i]);
-			}
-			*/
+			//free matrices
+			gsl_matrix_free(B);
+			gsl_matrix_free(Bnew);
+			gsl_matrix_free(J);
+			gsl_matrix_free(H);
+			gsl_matrix_free(H_inv);
+			gsl_matrix_free(prod);
 
 			//delete Data
 			deleteData(data);
+			printf("%lf %lf\n", b1, b2);
 
 			return(0);
 		}
@@ -147,7 +161,7 @@ int main(int argc, char *argv[]){
 }
 
 /**********************************************************************
-                         FUNCTION DEFINITIONS
+  FUNCTION DEFINITIONS
  **********************************************************************/
 
 // dynamically create instance data of struct type Data
@@ -215,7 +229,7 @@ void bsort(struct Data *data, int n){
 
 	int i, newn;
 	double templf;
-	
+
 	do{
 		newn = 0;
 
@@ -274,7 +288,7 @@ double deriv_first_x1(struct Data *data, double b1, double b2){
 				num += (data->x1[j] * exp((b1 * data->x1[j]) + (b2 * data->x2[j])));
 				den += exp((b1 * data->x1[j]) + (b2 * data->x2[j]));
 			}
-			
+
 			d -= (num / den);
 
 		} 
@@ -306,7 +320,7 @@ double deriv_first_x2(struct Data *data, double b1, double b2){
 				num += (data->x2[j] * exp((b1 * data->x1[j]) + (b2 * data->x2[j])));
 				den += exp((b1 * data->x1[j]) + (b2 * data->x2[j]));
 			}
-			
+
 			d -= (num / den);
 
 		} 
@@ -336,10 +350,8 @@ double deriv_second_x1_x2(struct Data *data, double b1, double b2){
 		if(data->e[i] == 1){
 
 			for(j=i; j<n; j++){
-				
-				e = exp((b1 * data->x1[j]) + (b2 * data->x2[j]));
 
-				printf("%lf\n", e);
+				e = exp((b1 * data->x1[j]) + (b2 * data->x2[j]));
 
 				num1 += (data->x1[j] * data->x2[j] * e);
 
@@ -349,7 +361,101 @@ double deriv_second_x1_x2(struct Data *data, double b1, double b2){
 
 				num2b += (data->x2[j] * e);
 
-				num2b += pow(e, 2);
+				den2 += pow(e, 2);
+
+			}
+
+
+			d += ((num1 / den1) - ((num2a * num2b) / den2));
+		}
+	}
+
+	d = (d * -1.0);
+
+	return(d);
+
+}
+
+double deriv_second_x1_x1(struct Data *data, double b1, double b2){
+
+	int i, j, n;
+	double d = 0;
+	double num1, den1, num2a, num2b, den2, e;
+
+	//get number of observations
+	n = (int)data->size;
+
+	for(i=0; i<n; i++){
+
+		num1 = 0;
+		den1 = 0;
+		num2a = 0; 
+		num2b = 0;
+		den2 = 0;
+
+		//if observation is not censored
+		if(data->e[i] == 1){
+
+			for(j=i; j<n; j++){
+
+				e = exp((b1 * data->x1[j]) + (b2 * data->x2[j]));
+
+				num1 += (data->x1[j] * data->x1[j] * e);
+
+				den1 += e;
+
+				num2a += (data->x1[j] * e);
+
+				num2b += (data->x2[j] * e);
+
+				den2 += pow(e, 2);
+
+			}
+
+
+			d += ((num1 / den1) - ((num2a * num2b) / den2));
+		}
+	}
+
+	d = (d * -1.0);
+
+	return(d);
+
+}
+
+double deriv_second_x2_x2(struct Data *data, double b1, double b2){
+
+	int i, j, n;
+	double d = 0;
+	double num1, den1, num2a, num2b, den2, e;
+
+	//get number of observations
+	n = (int)data->size;
+
+	for(i=0; i<n; i++){
+
+		num1 = 0;
+		den1 = 0;
+		num2a = 0; 
+		num2b = 0;
+		den2 = 0;
+
+		//if observation is not censored
+		if(data->e[i] == 1){
+
+			for(j=i; j<n; j++){
+
+				e = exp((b1 * data->x1[j]) + (b2 * data->x2[j]));
+
+				num1 += (data->x2[j] * data->x2[j] * e);
+
+				den1 += e;
+
+				num2a += (data->x1[j] * e);
+
+				num2b += (data->x2[j] * e);
+
+				den2 += pow(e, 2);
 
 			}
 
