@@ -163,14 +163,13 @@ In our case of two covariates:
 	\end{bmatrix}
 \end{equation}
 
-The inverse Hessian $\bm{H}^{-1}$ is obtained using LU decomposition.
+The inverse Hessian $\bm{H}^{-1}$ is obtained using LU decomposition. The algorithm 
+iterates until an arbitrary quality of approximation is obtained: $10e^{-6}$ was
+used.
 
-The algorithm iterates until an arbitrary quality of approximation is obtained:
 \begin{equation}
 	\bm{\beta}_{n} - \bm{\beta}_{n-1} \leq \epsilon
 \end{equation}
-
-Standard error
 
 \section*{Verification and Validation}
 This program's output was compared to that obtained using
@@ -180,18 +179,15 @@ in Table 1, the two are essentially identical.
 \begin{table}[h!]
 	\caption{Verification and validation}
 	\centering
-	\begin{tabular}{|l r r r r r|}
+	\begin{tabular}{|l r r r|}
 		\hline
-		& & & & &\\
-		& $\hat{\beta}_1$ & $SE(\hat{\beta_1})$ & $\hat{\beta}_2$ &
-		$SE(\hat{\beta_2})$ & Log likelihood\\
-		& & & & &\\
-		\hline
-		& & & & &\\
-		\textbf{R \texttt{survival} package}&  &           & & &           \\
-		& & & & &\\
-		\textbf{This C program}      &         &           & & &       \\
-		& & & & &\\
+		& & & \\
+		& $\hat{\beta}_1$ & $\hat{\beta}_2$  & Log likelihood\\
+		& & & \\
+		\textbf{R \texttt{survival} package} & 0.0405 & 0.0607&           \\
+		& & & \\
+		\textbf{This C program} & 0.0405  &  0.0605&       \\
+		& & & \\
 		\hline
 	\end{tabular}
 \end{table}

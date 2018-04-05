@@ -14,6 +14,14 @@
    STAT 778
    Spring 2018
    HW 3
+   Requires GNU Scientific Library (gsl)
+
+   Compilation
+   gcc -Wall -I/usr/include -c hw2_2.c
+   gcc -L/usr/lib/i386-linux-gnu hw2_2.o -o hw2_2 -lgsl -lgslcblas -lm 
+
+   You may need to change the arguments passed to -I and -L depending on where
+   the gsl header files and libgsl, respectively, live on your system
  */
 
 /**********************************************************************
@@ -47,7 +55,7 @@ int main(int argc, char *argv[]){
 	int i, s;
 	struct Data *data;
 	double e = 1;
-	double b1, b2;
+	double b1, b2, L;
 
 	// make sure input file argument passed
 	if(argc != 2){
@@ -64,8 +72,6 @@ int main(int argc, char *argv[]){
 			printf("%s\n", ABORT_MESSAGE);
 			exit(1);
 		} else {
-			printf("Reading file %s\n", in);
-
 			//count number of observations
 			n = count_lines(in);
 
@@ -74,7 +80,6 @@ int main(int argc, char *argv[]){
 
 			//read data from file into data structure
 			read_data(in, data);
-			printf("Read %d observations\n", n);
 
 			//sort data by time
 			bsort(data, n);
@@ -135,14 +140,6 @@ int main(int argc, char *argv[]){
 				e = fabs(gsl_matrix_max(diff));
 			}
 
-			/*
-			   then get SE
-			   evaluate Hessian at final estimates of beta-hat
-			   ''the square roots of the diagonal elements of the
-			   inverse of the Hessian are are the estimated standard
-			   errors''
-
-			 */
 			//free matrices
 			gsl_matrix_free(B);
 			gsl_matrix_free(Bnew);
@@ -151,9 +148,13 @@ int main(int argc, char *argv[]){
 			gsl_matrix_free(H_inv);
 			gsl_matrix_free(prod);
 
+			//evaluate log likelihood at final estimates of beta
+
 			//delete Data
 			deleteData(data);
-			printf("%lf %lf\n", b1, b2);
+			printf("Maximum partial likelihood estimates for Cox proportional hazards model\n");
+			printf("beta1: %lf\n", b1);
+			printf("beta2: %lf\n", b2);
 
 			return(0);
 		}
