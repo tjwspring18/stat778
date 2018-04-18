@@ -44,6 +44,7 @@ double deriv_first_x2(struct Data *data, double b1, double b2);
 double deriv_second_x1_x2(struct Data *data, double b1, double b2);
 double deriv_second_x1_x1(struct Data *data, double b1, double b2);
 double deriv_second_x2_x2(struct Data *data, double b1, double b2);
+double log_likelihood(struct Data *data, double b1, double b2);
 
 /**********************************************************************
   MAIN
@@ -140,7 +141,7 @@ int main(int argc, char *argv[]){
 				e = fabs(gsl_matrix_max(diff));
 			}
 
-			//free matrices
+			//free memory
 			gsl_matrix_free(B);
 			gsl_matrix_free(Bnew);
 			gsl_matrix_free(J);
@@ -149,12 +150,16 @@ int main(int argc, char *argv[]){
 			gsl_matrix_free(prod);
 
 			//evaluate log likelihood at final estimates of beta
+			L = log_likelihood(data, b1, b2);
 
 			//delete Data
 			deleteData(data);
+
+			//output results
 			printf("Maximum partial likelihood estimates for Cox proportional hazards model\n");
 			printf("beta1: %lf\n", b1);
 			printf("beta2: %lf\n", b2);
+			printf("Log-likelihood: %lf\n", L);
 
 			return(0);
 		}
@@ -469,4 +474,30 @@ double deriv_second_x2_x2(struct Data *data, double b1, double b2){
 
 	return(d);
 
+}
+
+double log_likelihood(struct Data *data, double b1, double b2){
+
+	int i, j, n;
+	double L, foo = 0;
+
+	//get number of observations
+	n = (int)data->size;
+
+	for(i=0; i<n; i++){
+
+		if(data->e[i] == 1){
+
+			L += ((b1 * data->x1[i]) + (b2 * data->x2[i]));
+
+			for(j=i; j<n; j++){
+				foo += (exp((b1 * data->x1[j]) + (b2 * data->x2[j])));
+			}
+
+			L -= log(foo);
+		}
+
+		return(L);
+
+	}
 }

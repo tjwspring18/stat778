@@ -174,7 +174,11 @@ used.
 \section*{Verification and Validation}
 This program's output was compared to that obtained using
 the \texttt{coxph} function from the \texttt{survival} package in R. As depicted
-in Table 1, the two are essentially identical.
+in Table 1, the two produce essentially identical estimated coefficients. I
+ suspect that the difference in log-likelihood estimates is due to a
+difference in optimization procedures: R often seeks to minimize the negative
+log-likelihood (c.f. documentation for the \texttt{mle} function), 
+whereas my program maximizes the log-likelihood. 
 
 \begin{table}[h!]
 	\caption{Verification and validation}
@@ -182,11 +186,11 @@ in Table 1, the two are essentially identical.
 	\begin{tabular}{|l r r r|}
 		\hline
 		& & & \\
-		& $\hat{\beta}_1$ & $\hat{\beta}_2$  & Log likelihood\\
+		& $\hat{\beta}_1$ & $\hat{\beta}_2$  & Log-likelihood\\
 		& & & \\
-		\textbf{R \texttt{survival} package} & 0.0405 & 0.0607&           \\
+		\textbf{R \texttt{survival} package} & 0.0405 & 0.0607&-664.2725\\
 		& & & \\
-		\textbf{This C program} & 0.0405  &  0.0605&       \\
+		\textbf{This C program} & 0.0405  &  0.0605   &-5.2081       \\
 		& & & \\
 		\hline
 	\end{tabular}
