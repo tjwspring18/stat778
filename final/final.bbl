@@ -1,0 +1,65 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.9 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{igeta2018}{article}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,uniquepart=base,hash=e1737ad651b4ac03a9fe336a8553476b}{%
+           family={Igeta},
+           familyi={I\bibinitperiod},
+           given={Masataka},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=813c578de831ef6125f108125ccdb8ac}{%
+           family={Takahashi},
+           familyi={T\bibinitperiod},
+           given={Kunihiko},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=bd99ab985ec99febf6b98e64efc866c6}{%
+           family={Matsui},
+           familyi={M\bibinitperiod},
+           given={Shigeyuki},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{2833843f76752217508919740c307cb2}
+      \strng{fullhash}{2833843f76752217508919740c307cb2}
+      \strng{bibnamehash}{2833843f76752217508919740c307cb2}
+      \strng{authorbibnamehash}{2833843f76752217508919740c307cb2}
+      \strng{authornamehash}{2833843f76752217508919740c307cb2}
+      \strng{authorfullhash}{2833843f76752217508919740c307cb2}
+      \field{sortinit}{I}
+      \field{sortinithash}{320bc8fe8101b9376f9f21cd507de0e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{year}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biometrics}
+      \field{title}{Power and sample size calculation incorporating misspecifications of the variance function in comparative clinical trials with over-dispersed count data}
+      \field{year}{2018}
+      \verb{doi}
+      \verb 10.111/biom.12878
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

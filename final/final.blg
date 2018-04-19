@@ -1,0 +1,16 @@
+[0] Config.pm:302> INFO - This is Biber 2.10
+[0] Config.pm:305> INFO - Logfile is 'final.blg'
+[62] biber:313> INFO - === Thu Apr 19, 2018, 19:16:29
+[106] Biber.pm:371> INFO - Reading 'final.bcf'
+[267] Biber.pm:857> INFO - Found 1 citekeys in bib section 0
+[296] Biber.pm:3976> INFO - Processing section 0
+[317] Biber.pm:4136> INFO - Looking for bibtex format file 'final.bib' for section 0
+[318] bibtex.pm:1444> INFO - Reading ascii input as UTF-8
+[319] bibtex.pm:1490> INFO - LaTeX decoding ...
+[324] bibtex.pm:1306> INFO - Found BibTeX data source 'final.bib'
+[357] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[357] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[357] Biber.pm:3804> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'en-US'
+[357] Biber.pm:3810> INFO - No sort tailoring available for locale 'en-US'
+[362] bbl.pm:617> INFO - Writing 'final.bbl' with encoding 'ascii'
+[364] bbl.pm:720> INFO - Output to final.bbl

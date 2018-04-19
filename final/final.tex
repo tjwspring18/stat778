@@ -1,0 +1,108 @@
+\documentclass{article}
+
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[citestyle=authoryear]{biblatex}
+\addbibresource{final.bib}
+
+
+\author{Tom Wallace}
+
+\title{STAT 778 Final Project: Implementation of Igeta, Takahashi, and Matsui
+2018}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+This paper documents an implementation of the technique of \cite{igeta2018}. It
+gives some background on their method; presents a fast software program in C
+implementing their method; and conducts verification and validation of this
+program.
+
+\section{Methods and Code}
+
+\subsection{Background}
+
+Overdispersion refers to a situation in which the variance of a dataset exceeds
+that which would be expected under the assumed statistical distribution. 
+Overdispersion is common in count data. As a motivating example, consider the
+Poisson distribution. A single parameter determines both the 
+mean and variance (i.e., for $X \sim \mathrm{Poisson}(\lambda)$, $\mu =
+\sigma^2 = \lambda$). As a consequence, if the mean and variance
+differ in a dataset, the researcher cannot adjust parametric assumptions for 
+without also affecting the other. If not addressed, 
+overdispersion results in distorted test statistics and estimated
+standard errors. Clinical trials often feature count data: e.g., a trial of an
+anti-epsilepsy treatment may use \textit{number of seizures over study period} as the outcome
+variable. The serious consequences of statistical error in such settings demands
+a rigorous method for dealing with overdispersion. \cite{igeta2018} is a new
+entry to the large literature on this topic. In particular, it presents methods
+for calculating statistical power and sample size in the presence of
+misspecified variance.
+
+\subsection{Methods}
+
+Consider a randomized control trial featuring $n$ subjects. Subjects are
+randomly assigned to a treatment or control group. Let $n_i$ be the sample size
+of the $i$th group, with $i \in \{1, 2\}$.
+Let $q_i = \frac{n_i}{n}$ be the proportion of subjects assigned to
+the $i$th group. Let $\pi_i$ be the allocation ratio to the $i$th group, where
+$\lim_{n \to \infty} q_i = \pi_i$
+Let $X_{ij}$ be an indicator of the treatment assignment for the $j$th subject
+($j=1,2\ldots n$) in the $i$th group. $X_{ij}=0$ indicates
+assignment to the control group. $X_{ij}=1$ indicates assignment to the
+treatment group. Let $Y_{ij}$ be the number of events associated with the subject
+during the period $[0, T_{ij}]$, from the point of treatment assignment to the
+end of follow-up.
+
+\cite{igeta2018} consider a statistical test for group comparison. The test is
+based on a quasi-likelihood using a sandwich-type robust estimator; for further
+details, consult their paper. The goal is
+to estimate coefficients in a Poisson model:
+
+$$
+\lambda_i = \exp{(\beta_0 + \beta_1 X_{ij})}
+$$
+
+\cite{igeta2018} propose that the asymptotic power of the test is
+
+\begin{equation}
+\mathrm{Pr} \left( Z > z_{1 - \alpha/ 2} \right) 
+=
+1 - \Phi 
+\left(
+z_{1 - \alpha / 2}
+\sqrt{\frac{W_0}{W_1}}
+-
+\sqrt{n}
+\frac{\beta_1}{\sqrt{W_1}}
+\right)
+\end{equation}
+
+and the sample size that provides power greater than or equal to 
+$1 - \beta$ is
+
+\begin{equation}
+n \geq \frac{(z_{1 - \alpha / 2} \sqrt{W_0} + z_{1 - \beta}
+\sqrt{W_1})^2}{\left( \log (\lambda_2 / \lambda_1 ) \right)^2}
+\end{equation}
+
+where:
+
+\begin{itemize}
+\item $z_a$ is the lower $a$ point of the standard normal distrbution
+\item $\Phi$ is the CDF of the standard normal distribution
+\item When a constant follow-up period $\tau$ 
+\end{itemize}
+
+
+\section{Simulation Study}
+
+\section{Conclusion}
+
+\printbibliography[heading=bibnumbered]
+
+\end{document}
