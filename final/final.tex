@@ -9,7 +9,7 @@
 
 \author{Tom Wallace}
 
-\title{STAT 778 Final Project: Implementation of Igeta, Takahashi, and Matsui
+\title{STAT 778 Final Project: Igeta, Takahashi, and Matsui
 2018}
 
 \begin{document}
@@ -17,21 +17,21 @@
 \maketitle
 
 \section{Introduction}
-This paper documents an implementation of the technique of \cite{igeta2018}. It
-gives some background on their method; presents a fast software program in C
-implementing their method; and conducts verification and validation of this
-program.
 
-\section{Methods and Code}
+\subsection{Overview}
+
+This paper documents a simulation study based on \cite{igeta2018}. It
+gives some background on their method; presents a software program coded in C; 
+and conducts a simulation study using this program. 
 
 \subsection{Background}
 
 Overdispersion refers to a situation in which the variance of a dataset exceeds
-that which would be expected under the assumed statistical distribution. 
+that expected under the assumed statistical distribution. 
 Overdispersion is common in count data. As a motivating example, consider the
 Poisson distribution. A single parameter determines both the 
-mean and variance (i.e., for $X \sim \mathrm{Poisson}(\lambda)$, $\mu =
-\sigma^2 = \lambda$). As a consequence, if the mean and variance
+mean and variance: i.e., for $X \sim \mathrm{Poisson}(\lambda)$, $\mu =
+\sigma^2 = \lambda$. As a consequence, if the mean and variance
 differ in a dataset, the researcher cannot adjust parametric assumptions for 
 without also affecting the other. If not addressed, 
 overdispersion results in distorted test statistics and estimated
@@ -43,63 +43,155 @@ entry to the large literature on this topic. In particular, it presents methods
 for calculating statistical power and sample size in the presence of
 misspecified variance.
 
-\subsection{Methods}
+\section{Methods}
 
-Consider a randomized control trial featuring $n$ subjects. Subjects are
-randomly assigned to a treatment or control group. Let $n_i$ be the sample size
-of the $i$th group, with $i \in \{1, 2\}$.
-Let $q_i = \frac{n_i}{n}$ be the proportion of subjects assigned to
-the $i$th group. Let $\pi_i$ be the allocation ratio to the $i$th group, where
-$\lim_{n \to \infty} q_i = \pi_i$
-Let $X_{ij}$ be an indicator of the treatment assignment for the $j$th subject
-($j=1,2\ldots n$) in the $i$th group. $X_{ij}=0$ indicates
-assignment to the control group. $X_{ij}=1$ indicates assignment to the
-treatment group. Let $Y_{ij}$ be the number of events associated with the subject
-during the period $[0, T_{ij}]$, from the point of treatment assignment to the
-end of follow-up.
+The following is a brief summary of the methods proposed in \cite{igeta2018}.
+The reader is encouraged to consult their paper for the necessary details. All
+notation here follows that used in the original paper.
 
-\cite{igeta2018} consider a statistical test for group comparison. The test is
-based on a quasi-likelihood using a sandwich-type robust estimator; for further
-details, consult their paper. The goal is
-to estimate coefficients in a Poisson model:
-
+Consider a randomized control trial featuring $n$ subjects. 
+Subjects are randomly assigned to a treatment or control group.
+Let $n_i$ be the sample size of the $i$th group, with $i \in \{1, 2\}$.
+Let $X_{ij}$ be an indicator variable of subject $j$'s group assignment. 
+$X_{ij}=0$ indicates assignment to the control group.
+Let $Y_ij$ be a count variable for patient $j$ in group $i$ over the follow-up period $[0, T_{ij}]$.
+The expected value of $Y_{ij}$ is affected by a rate parameter $\lambda_i$.
+The goal is to estimate the effect of treatment via a Poisson model 
 $$
-\lambda_i = \exp{(\beta_0 + \beta_1 X_{ij})}
+\lambda_i 
+= \exp{(\beta_0 + \beta_1 X_{ij})}
 $$
+but $\lambda$ is overdispersed. 
 
-\cite{igeta2018} propose that the asymptotic power of the test is
+\cite{igeta2018} propose a procedure for determining sample size and power in
+the presence of overdispersion. The basic idea is that we assume there is some 
+true variance function $V$ but this function is unknown. In practice we use
+working variance function $\tilde{V}$. We don't actually know if we have
+properly specified the true variance function and so would like sample size and power
+calculations that are robust to misspecification.
+
+\cite{igeta2018} employ a Wald-type test statistic using the sandwich-type
+robust variance estimator under the null hypothesis:
 
 \begin{equation}
-\mathrm{Pr} \left( Z > z_{1 - \alpha/ 2} \right) 
-=
-1 - \Phi 
-\left(
-z_{1 - \alpha / 2}
-\sqrt{\frac{W_0}{W_1}}
--
-\sqrt{n}
-\frac{\beta_1}{\sqrt{W_1}}
-\right)
+	Z = \frac{\hat{\beta}_1}{\sqrt{n^{-1} \hat{W}_0}}
 \end{equation}
 
-and the sample size that provides power greater than or equal to 
-$1 - \beta$ is
+They propose that the asymptotic power of the test using $Z$ 
+with two-sided significance level $\alpha$ is:
 
 \begin{equation}
-n \geq \frac{(z_{1 - \alpha / 2} \sqrt{W_0} + z_{1 - \beta}
-\sqrt{W_1})^2}{\left( \log (\lambda_2 / \lambda_1 ) \right)^2}
+	\mathrm{Pr} \left( Z > z_{1 - \alpha/ 2} \right) 
+	=
+	1 - \Phi 
+	\left(
+	z_{1 - \alpha / 2}
+	\sqrt{\frac{W_0}{W_1}}
+	-
+	\sqrt{n}
+	\frac{\beta_1}{\sqrt{W_1}}
+	\right)
 \end{equation}
 
-where:
+The sample size that provides power greater than or equal to $1 - \beta$ is
+
+\begin{equation}
+	n \geq \frac{(z_{1 - \alpha / 2} \sqrt{W_0} + z_{1 - \beta}
+	\sqrt{W_1})^2}{\left( \log (\lambda_2 / \lambda_1 ) \right)^2}
+\end{equation}
+
+The reader should consult \cite{igeta2018} to understand these equations, as
+space constraints disallow a full explanation here. Their chief claim
+is that these methods are robust to misspecification of variance.
+
+\section{Software Program}
+
+\subsection{Overview}
+
+We can empirically test these methods by the following procedure.
 
 \begin{itemize}
-\item $z_a$ is the lower $a$ point of the standard normal distrbution
-\item $\Phi$ is the CDF of the standard normal distribution
-\item When a constant follow-up period $\tau$ 
+	\item Randomly generate data that is overdispersed according to some
+		true variance function; that has true treatment
+		effect $\exp{(\beta_1)}$; and that has sample size equal to that
+		recommended by (3) for the desired power $1-\beta$ calculated
+		using (2).
+	\item Conduct a test of $H_0: \beta_1 = 0$ vs. $H_1: \beta_1 \neq 0$
+		using (1). Record whether a type II error occurred.
+	\item Conduct many iterations of the previous two steps.
+		Calculate the proportion of type II errors:
+		$$
+		\bar{\beta} = \frac{1}{N}\sum_{t = 1}^N \beta_{(t)}
+		$$
+
+		where $\beta_{(t)}$ is an indicator of whether a type II error
+		occured for trial $t$ and $N$ is the total number of iterations.
+	\item Compare $1-\bar{\beta}$ to the asymptotic power calculated using (2). We
+		hope that $1-\bar{\beta} \approx 1 - \beta$.
 \end{itemize}
 
+We conduct this procedure for multiple different true variance functions and
+working variance functions and effect sizes. If the empirical power $1 - \bar{\beta}$ 
+matches the asymptotic power across all specifications, we conclude that the claims of
+\cite{igeta2018} are correct and that their methods are robust.
+
+\subsection{Technical Details}
+
+The software program carries out the testing strategy outlined above. Source code is contained in \texttt{final.c}. 
+The program requires the GNU Scientific Library (GSL), an
+open-source numerical library. It can be obtained from
+\url{www.gnu.org/software/gsl}; or, it can installed from most standard Linux
+package managers. An example command to achieve the latter is:
+
+\begin{center}
+	\texttt{sudo apt-get install gsl-bin libgsl-dev}
+\end{center}
+
+Compilation of \texttt{final.c} is best achieved in two steps. First, use the below
+command to compile the program but not link it. You may need to change the
+argument passed to the \texttt{-I} flag to wherever the \texttt{gsl} header
+files live on your computer. 
+
+\begin{center}
+	\texttt{gcc -I/usr/include -c final.c}
+\end{center}
+
+This command should create an object file \texttt{final.o}. Link this 
+object file to relevant libraries with the following command.
+You may need to change the argument passed to the \texttt{-L} flag to
+wherever \texttt{libgsl} lives on your computer.
+
+\begin{center}
+	\texttt{gcc -L/usr/lib final.o -o final -lgsl -lgslcblas -lm}
+\end{center}
+
+Once successfully compiled, the program can be executed. It does not require any
+arguments. Output is comma-separated text printed to \texttt{stdout}. You likely want to pipe this
+output to a text file, as per the following command:
+
+\begin{center}
+	\texttt{./final > output.csv}
+\end{center}
 
 \section{Simulation Study}
+
+\subsection{Settings}
+
+The rate of event incidence in the control group, $\lambda_1$, is 1.25.
+Equivalently, this corresponds to $\beta_0 = 0.22314$ in $\exp{(\beta_0)}$. The
+allocation ratio is equal across groups (i.e. $q_1 = q_2 = 0.5$). The follow-up
+period $\tau$ is 1 year. Some subjects drop out early. Time to dropout follows
+an exponential distribution with parameter value 0.356, such that about 30\% of
+subjects drop out early. So in practice the observed follow-up time $T$ is the
+miniimum of time to dropout and $\tau$.
+
+The tested values for true relative risk (effect size) $\exp{(\beta_1)}$ are $\exp{(\beta_1)} = \frac{\lambda_2}{\lambda_1}
+= 0.4 | 0.6 | 0.8$. The desired power is 90\% across all specifications. 
+The power for a particular
+true effect size (per above) is calculated using (2). The number of 
+observations is computed using (3).
+
+The true variance function is 
 
 \section{Conclusion}
 
