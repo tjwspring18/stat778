@@ -5,6 +5,8 @@
 \usepackage{amssymb}
 \usepackage[citestyle=authoryear]{biblatex}
 \addbibresource{final.bib}
+\usepackage{geometry}
+\geometry{margin=1in}
 
 
 \author{Tom Wallace}
@@ -44,6 +46,8 @@ for calculating statistical power and sample size in the presence of
 misspecified variance.
 
 \section{Methods}
+
+\subsection{Overview}
 
 The following is a brief summary of the methods proposed in \cite{igeta2018}.
 The reader is encouraged to consult their paper for the necessary details. All
@@ -100,9 +104,125 @@ The sample size that provides power greater than or equal to $1 - \beta$ is
 	\sqrt{W_1})^2}{\left( \log (\lambda_2 / \lambda_1 ) \right)^2}
 \end{equation}
 
-The reader should consult \cite{igeta2018} to understand these equations, as
-space constraints disallow a full explanation here. Their chief claim
+The reader should consult the paper to understand these equations, as
+space constraints disallow a full explanation here. The chief claim
 is that these methods are robust to misspecification of variance.
+
+\subsection{Extensions}
+
+Calculating the $Z$-statistic given in (1) is non-trivial. Here, we expand upon
+the definitions given in \cite{igeta2018} to obtain a workable formulation.
+
+\subsubsection{Calculating $\hat{\beta_1}$}
+
+The maximum quasi-likelihood estimate of $\bm{\beta}=(\beta_0, \beta_1)$ is
+given as:
+
+\begin{equation}
+\sum_{i=1}^2 \sum_{j=1}^{n_i} \bm{D}'_{ij} \tilde{V}_{ij}^{-1}(Y_{ij}-\mu_{ij})
+= \bm{0}
+\end{equation}
+
+where 
+
+$$
+\bm{D}'_{ij} = \frac{\partial \mu_{ij}}{\partial \bm{\beta}}
+$$ 
+
+Although not directly stated, we will trust that these functions are convex (if
+not, the resultant estimates are not unique). This system of equations can be numerically solved using the 
+Newton-Raphson algorithm but first we must obtain a more tractable form. Since $\mu_{ij} = T_{ij}\lambda_i$,
+
+$$
+\frac{\partial \mu_{ij}}{\partial \beta_0} = T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}
+$$
+$$
+\frac{\partial \mu_{ij}}{\partial \beta_1} = T_{ij}X_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}
+$$
+
+For $\tilde{V}_{ij}$, we will only concern ourselves with the working variance
+function of form $\tilde{V}_{ij} = \tilde{\phi} \mu_{ij} =
+\tilde{\phi} T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}$. Plugging everything back into
+(4), we have
+
+$$
+\sum_{i=1}^2 \sum_{j=1}^{n_i}  T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}
+\frac{1}{\tilde{\phi} T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}} 
+(Y_{ij} - T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}) = 0
+$$
+$$
+\sum_{i=1}^2 \sum_{j=1}^{n_i} T_{ij} X_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}
+\frac{1}{\tilde{\phi} T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}} 
+(Y_{ij} - T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}) = 0
+$$
+
+Which simplifies to
+$$
+\sum_{i=1}^2 \sum_{j=1}^{n_i} (Y_{ij} - T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}) = 0
+$$
+\begin{equation}
+	\sum_{i=1}^2 \sum_{j=1}^{n_i} X_{ij} (Y_{ij} - T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}) = 0
+\end{equation}
+
+as the exponential expressions cancel out and $\tilde{\phi}$ is an arbitrary
+constant that does not affect the solution. We now must take the derivatives of
+the left-hand side of 
+(5):
+
+$$
+\frac{\partial}{\partial \beta_0} 
+\sum_{i=1}^2 \sum_{j=1}^{n_i} (Y_{ij} - T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})})
+=
+- \sum_{i=1}^2 \sum_{j=1}^{n_i} T_{ij}\exp{(\beta_0 + \beta_1 X_{ij})}
+$$
+$$
+\frac{\partial}{\partial \beta_1} 
+\sum_{i=1}^2 \sum_{j=1}^{n_i} (Y_{ij} - T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})})
+=
+- \sum_{i=1}^2 \sum_{j=1}^{n_i} T_{ij}X_{ij}\exp{(\beta_0 + \beta_1 X_{ij})}
+$$
+$$
+\frac{\partial}{\partial \beta_0} 
+	\sum_{i=1}^2 \sum_{j=1}^{n_i} X_{ij} (Y_{ij} - T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})})
+=
+	- \sum_{i=1}^2 \sum_{j=1}^{n_i} T_{ij} X_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}
+$$
+$$
+\frac{\partial}{\partial \beta_1} 
+	\sum_{i=1}^2 \sum_{j=1}^{n_i} X_{ij} (Y_{ij} - T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})})
+=
+	- \sum_{i=1}^2 \sum_{j=1}^{n_i} T_{ij} X_{ij}^2 \exp{(\beta_0 + \beta_1 X_{ij})}
+$$
+
+Thus, the Newton-Raphson algorithm for finding $\hat{\bm{\beta}}$ is (omitting the summation symbols for brevity):
+
+\small
+\begin{equation}
+	\begin{bmatrix}
+		\beta_{0}^{(n+1)} \\
+		\beta_{1}^{(n+1)} \\
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		\beta_{0}^{(n)} \\
+		\beta_{1}^{(n)} \\
+	\end{bmatrix}
+	- 
+	\begin{bmatrix}
+		- T_{ij}\exp{(\hat{\beta}_0^{(n)} + \hat{\beta}_1^{(n)}X_{ij})} & - T_{ij}X_{ij} \exp{(\hat{\beta}_0^{(n)}+ \hat{\beta}_1^{(n)}X_{ij})} \\
+		- T_{ij} X_{ij} \exp{(\hat{\beta}_0^{(n)}+ \hat{\beta}_1^{(n)}X_{ij})} & - T_{ij}X_{ij}^2 \exp{(\hat{\beta}_0^{(n)}+ \hat{\beta}_1^{(n)}X_{ij})} \\
+	\end{bmatrix}^{-1}
+	\begin{bmatrix}
+		Y_{ij} - T_{ij} \exp{(\hat{\beta}_0^{(n)}+ \hat{\beta}_1^{(n)}X_{ij})} \\
+		X_{ij}(Y_{ij} - T_{ij} \exp{(\hat{\beta}_0^{(n)}+
+		\hat{\beta}_1^{(n)}X_{ij}))} \\
+	\end{bmatrix}
+\end{equation}
+
+\normalsize
+
+\subsection{Calculating $\hat{W}_0$}
+Foo
 
 \section{Software Program}
 
@@ -187,9 +307,8 @@ miniimum of time to dropout and $\tau$.
 
 The tested values for true relative risk (effect size) $\exp{(\beta_1)}$ are $\exp{(\beta_1)} = \frac{\lambda_2}{\lambda_1}
 = 0.4 | 0.6 | 0.8$. The desired power is 90\% across all specifications. 
-The power for a particular
-true effect size (per above) is calculated using (2). The number of 
-observations is computed using (3).
+The power for a particular true effect size (per above) is calculated using (2). 
+The number of observations is computed using (3).
 
 The true variance function is 
 
