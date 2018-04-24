@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.12.24)  23 APR 2018 14:38
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.12.24)  23 APR 2018 15:17
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -456,17 +456,17 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
 {/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2]
-Overfull \hbox (29.68156pt too wide) detected at line 220
+Overfull \hbox (29.68156pt too wide) detected at line 223
 [] \OT1/cmr/m/n/9 = [] \OMS/cmsy/m/n/9 ^^@ [][] []
  []
 
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 234.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 241.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 234.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 241.
  [3] [4]
 (./final.aux)
 Package logreq Info: Writing requests to 'final.run.xml'.
@@ -476,7 +476,7 @@ Package logreq Info: Writing requests to 'final.run.xml'.
 Here is how much of TeX's memory you used:
  8747 strings out of 494427
  149595 string characters out of 6167361
- 558400 words of memory out of 5000000
+ 559400 words of memory out of 5000000
  12006 multiletter control sequences out of 15000+600000
  19695 words of font info for 73 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
@@ -507,7 +507,7 @@ ist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2017/texmf-dis
 t/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2017/texmf-dist/
 fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2017/texmf-dist/f
 onts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on final.pdf (4 pages, 263266 bytes).
+Output written on final.pdf (4 pages, 265750 bytes).
 PDF statistics:
  121 PDF objects out of 1000 (max. 8388607)
  88 compressed objects within 1 object stream

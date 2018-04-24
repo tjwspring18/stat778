@@ -22,62 +22,26 @@ struct Data{
 };
 struct Data* makeData(size_t sz);
 void deleteData(struct Data *data);
-int dropouts(int n_assigned, double lambda_d);
 int min(int a, int b);
-void assignGroup(struct Data *data, int group);
-void assignCount(struct Data *data, double p, double rr);
+void assignT(struct Data *data, double lambda_d);
+void assignX(struct Data *data, int group);
+void assignY(struct Data *data, double p, double rr);
+void runSimulation(int n_assigned, double lambda_d, double p_1, double rr_1, double p_2, double
+		rr_2);
 
 /************************************************************************
                                  MAIN
  ***********************************************************************/
 int main(void){
 
-	srand(time(NULL));
-
-	struct Data *control;
-	struct Data *treatment;
-
-	int i;
-	int n_observed_control;
-	int n_observed_treatment;
-	double lambda_d = 1 / 0.356;
-
 	int n_assigned = 1000;
+	double lambda_d = 1 / 0.356;
+	double p_1 = 1-0.46352;
+	double rr_1 = 1.44625;
+	double p_2 = 1 - 0.49239;
+	double rr_2 = 1.0309;
 
-	n_observed_control = dropouts(n_assigned, lambda_d);
-	n_observed_treatment = dropouts(n_assigned, lambda_d);
-
-	control = makeData(n_observed_control);
-	treatment = makeData(n_observed_treatment);
-
-	assignGroup(control, 0);
-	assignGroup(treatment, 0);
-
-	assignCount(control, 1-0.46352, 1.44625);
-	assignCount(treatment, 0.5, 1.44625);
-
-/*
-   row 1: p = 0.46352, r = 1.44
- */
-	/* Replace p with 1-p */
-	double mean = gsl_stats_mean(control->y, 1, control->size);
-	double var = gsl_stats_variance(control->y, 1, control->size);
-	printf("%lf %lf\n", mean, var);
-
-	//functions to calculate hat_beta
-
-	//functions to calculate hat_w0
-
-	//do test
-
-	//record whether type II error occurs
-	/*
-	for(i = 0; i < data->size; i++){
-		printf("%d %d\n", data->x[i], data->y[i]);
-	}
-	*/
-	deleteData(control);
-	deleteData(treatment);
+	runSimulation(n_assigned, lambda_d, p_1, rr_1, p_2, rr_2);
 
 }
 
@@ -101,10 +65,10 @@ void deleteData(struct Data *data){
 	free(data);
 }
 
-int dropouts(int n_assigned, double lambda_d){
+void assignT(struct Data *data, double lambda_d){
 
-	int n_observed = 0;
 	int i;
+	int n = data->size;
 
 	const gsl_rng_type *T;
 	gsl_rng *r;
@@ -113,17 +77,12 @@ int dropouts(int n_assigned, double lambda_d){
 	r = gsl_rng_alloc(T);
 	gsl_rng_set(r, rand());
 
-	for(i = 0; i < n_assigned; i++){
+	for(i = 0; i < n; i++){
 		int k = gsl_ran_exponential(r, lambda_d);
-		k = min(k, 1);
-		if(k > 0){
-			n_observed++;
-		}
+		data->t[i] = min(k, 1);
 	}
 
 	gsl_rng_free(r);
-
-	return(n_observed);
 }
 
 int min(int a, int b){
@@ -134,7 +93,7 @@ int min(int a, int b){
 	}
 }
 
-void assignGroup(struct Data *data, int group){
+void assignX(struct Data *data, int group){
 	int n = data->size;
 	int i;
 	for(i = 0; i < n; i++){
@@ -142,7 +101,7 @@ void assignGroup(struct Data *data, int group){
 	}
 }
 
-void assignCount(struct Data *data, double p, double rr){
+void assignY(struct Data *data, double p, double rr){
 
 	int n = data->size;
 	int i, c;
@@ -160,4 +119,47 @@ void assignCount(struct Data *data, double p, double rr){
 	}
 
 	gsl_rng_free(r);
+}
+
+void runSimulation(int n_assigned, double lambda_d, double p_1, double rr_1, double p_2, double rr_2){
+
+	srand(time(NULL));
+
+	struct Data *control;
+	struct Data *treatment;
+
+	// generate two groups
+	control = makeData(n_assigned);
+	treatment = makeData(n_assigned);
+
+	// covariate X is indicator of group membership
+	assignX(control, 0);
+	assignX(treatment, 1);
+
+	// follow up time follows exponential distribution
+	// about 30% of subjects drop out early
+	assignT(control, lambda_d);
+	assignT(treatment, lambda_d);
+
+	// outcome variable (count) Y
+	assignY(control, p_1, rr_1);
+	assignY(treatment, p_2, rr_2);
+
+	/* Replace p with 1-p */
+	double mean = gsl_stats_mean(control->y, 1, control->size);
+	double var = gsl_stats_variance(control->y, 1, control->size);
+	printf("%lf %lf\n", mean, var);
+
+	mean = gsl_stats_mean(treatment->y, 1, treatment->size);
+	var = gsl_stats_variance(treatment->y, 1, treatment->size);
+	printf("%lf %lf\n", mean, var);
+
+	//functions to calculate hat_beta
+
+	//functions to calculate hat_w0
+
+	//do test
+
+	deleteData(control);
+	deleteData(treatment);
 }
