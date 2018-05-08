@@ -1930,6 +1930,13 @@
     <bcf:citekey order="5">igeta2018</bcf:citekey>
     <bcf:citekey order="6">igeta2018</bcf:citekey>
     <bcf:citekey order="7">igeta2018</bcf:citekey>
+    <bcf:citekey order="8">igeta2018</bcf:citekey>
+    <bcf:citekey order="9">zeger1988models</bcf:citekey>
+    <bcf:citekey order="10">igeta2018</bcf:citekey>
+    <bcf:citekey order="11">igeta2018</bcf:citekey>
+    <bcf:citekey order="12">bootstrap</bcf:citekey>
+    <bcf:citekey order="13">dempster1977maximum</bcf:citekey>
+    <bcf:citekey order="14">igeta2018</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

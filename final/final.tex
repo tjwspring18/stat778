@@ -8,11 +8,9 @@
 \usepackage{geometry}
 \geometry{margin=1in}
 
-
 \author{Tom Wallace}
 
-\title{STAT 778 Final Project: Igeta, Takahashi, and Matsui
-2018}
+\title{STAT 778 Final Project: Igeta, Takahashi, and Matsui 2018}
 
 \begin{document}
 
@@ -26,6 +24,16 @@ This paper documents a simulation study based on \cite{igeta2018}. It
 gives some background on their method; presents a software program coded in C; 
 and conducts a simulation study using this program. 
 
+I made little progress despite starting early and spending many hours on the project. 
+I accept responsibility for this poor result.
+That said, I believe \cite{igeta2018} to be a poorly-written and
+inconsistently-notated paper with apparent errors.
+One cannot write code without understanding the underlying math, 
+and I spent so much time (unsuccessfully) trying to understand what
+the authors were even talking about that I could not produce a working
+program. I have left in the ``skeleton'' of sections that I was not able to
+actually fulfill to make clear what my intent was.
+
 \subsection{Background}
 
 Overdispersion refers to a situation in which the variance of a dataset exceeds
@@ -35,7 +43,7 @@ Poisson distribution. A single parameter determines both the
 mean and variance: i.e., for $X \sim \mathrm{Poisson}(\lambda)$, $\mu =
 \sigma^2 = \lambda$. As a consequence, if the mean and variance
 differ in a dataset, the researcher cannot adjust parametric assumptions for 
-without also affecting the other. If not addressed, 
+one without also affecting the other. If not addressed, 
 overdispersion results in distorted test statistics and estimated
 standard errors. Clinical trials often feature count data: e.g., a trial of an
 anti-epsilepsy treatment may use \textit{number of seizures over study period} as the outcome
@@ -82,7 +90,9 @@ robust variance estimator under the null hypothesis:
 \end{equation}
 
 They propose that the asymptotic power of the test using $Z$ 
-with two-sided significance level $\alpha$ is:
+with two-sided significance level $\alpha$ is\footnote{I think that 
+this equation actually is wrong (as discussed in class) but was unable to derive the
+correct version.}
 
 \begin{equation}
 	\mathrm{Pr} \left( Z > z_{1 - \alpha/ 2} \right) 
@@ -97,7 +107,7 @@ with two-sided significance level $\alpha$ is:
 	\right)
 \end{equation}
 
-The sample size that provides power greater than or equal to $1 - \beta$ is
+ The sample size that provides power greater than or equal to $1 - \beta$ is
 
 \begin{equation}
 	n \geq \frac{(z_{1 - \alpha / 2} \sqrt{W_0} + z_{1 - \beta}
@@ -110,11 +120,86 @@ is that these methods are robust to misspecification of variance.
 
 \subsection{Extensions}
 
-Generating appropriately dispersed data, and calculating the $Z$-statistic given
-in (1), are non-trivial. Here, we expand upon
-the definitions given in the paper to obtain a workable formulation.
+To actually implement the methods of \cite{igeta2018}, 
+the reader must significantly expand upon the terse descriptions
+given by the authors. Here, I go into further detail on some key points.
 
-\subsubsection{Generating Overdispersed Data}
+\subsubsection{Calculating $\hat{\tilde{\phi}}_p^*$}
+
+In order to calculate the $Z$-statistic given in (1), we must obtain
+$\hat{\tilde{\phi}}^*$, which is a consistent estimate of the dispersion
+parameter of $\tilde{V}$ under $H_0$. \cite{igeta2018} gives:
+
+\begin{equation}
+	\tilde{\phi}_p = \lim_{n \to \infty} \frac{\sum_{i=1}^2
+	\sum_{j=1}^{n_i}(V_{ij} - \mu_{ij})\mu_{ij}^{p}}{\sum_{i=1}^{2}
+	\sum_{j=1}^{n_i}\mu_{ij}^{2p}}
+\end{equation}
+
+and notes ``under the null hypothesis, the dispersion parameter is determined by
+replacing $V_{ij}$ with $V_{ij}^*$ and $\mu_{ij}$ with $\mu_{ij}^*$.'' There are
+many issues here that must be resolved.
+
+One, the estimate given above is for the working variance function $\tilde{V} = \mu_{ij} + \tilde{\phi}_p
+\mu_{ij}^p$. The authors say that ``we can employ other working variance
+functions such as  $\phi \mu^p$ and $\phi_1 \mu \phi_2 \mu^2$.'' It is not clear
+if this contrasting usage of $\tilde{\phi}$ vs. $\phi$ is intentional 
+(elsewhere, a tilde indicates the ``working'' version of
+something while the absence of a tilde indicates the ``true'' version of
+something) or simply an error in notation. I proceed under the assumption that
+it is an error.
+
+Two, this equation is only valid for the working variance function $\tilde{V} = \mu_{ij} + \tilde{\phi}_p
+\mu_{ij}^p$ and no estimator is offered for other working variance functions, even though
+the authors use others in their simulation study (see Tables 2 and 3). In class, Dr.
+Diao indicated that the following equation might work for $\phi \mu^p$:
+
+\begin{equation}
+	\tilde{\phi}_p =  \lim_{n \to \infty} \frac{\sum_{i=1}^2
+	\sum_{j=1}^{n_i}V_{ij} \mu_{ij}^{p}}{\sum_{i=1}^{2}
+	\sum_{j=1}^{n_i}\mu_{ij}^{2p}}
+\end{equation}
+
+Three, I believe that the use of $V$ is an error. $V$ indicates
+the unknown true variance function. Because it is unknown, using it as part of
+an estimator makes no sense. We instead should use $V^{(S)}$, some assumed form
+of the true variance function. The authors discuss this $V$ vs. $V^{(S)}$
+distinction but apparently err in discussing what equations the correction needs
+to be applied to (using their equation numbering, they say (3) but really it is
+(4)).
+
+Taking all of this into account, I believe the following is the correct way to
+calculate $\hat{\tilde{\phi}}_p^*$. Assume the true variance function
+$V^{(S)}=\mu + \phi \mu^p$. Assume a working variance function of $\tilde{V} =
+\tilde{\phi}\mu$. I use ``;'' to separate multiple superscripts (I have to use
+these multiple superscripts to maintain correspondence to their original
+notation). Then:
+
+$$
+	\hat{\tilde{\phi}}_p^* = \frac{\sum_{i=1}^2
+	\sum_{j=1}^{n_i}V^{*; (S)}_{ij} \mu_{ij}^{*; p}}{\sum_{i=1}^{2}
+	\sum_{j=1}^{n_i}\mu_{ij}^{*; 2p}}
+$$
+
+There is a further complication. It is given that $\mu_{ij}^* = T_{ij}
+\exp{(\hat{\beta}_0^*)}$, where $\hat{\beta}_0^*$ is the maximum
+quasi-likelihood estimate. So, we must find $\hat{\beta}_0^*$ before
+proceeding. It is given that the maximum quasi-likelihood estimate of 
+$\bm{\beta}=(\beta_0, \beta_1)$ is
+
+$$
+	\sum_{i=1}^2 \sum_{j=1}^{n_i} \bm{D}'_{ij} \tilde{V}_{ij}^{-1}(Y_{ij}-\mu_{ij})
+	= \bm{0}
+$$
+
+One can see that this equation depends on $\tilde{V}_{ij}$, which takes
+$\tilde{\phi}$ as a parameter, which is course what we are trying to estimate
+via $\hat{\tilde{\phi}}$. This mutual dependence means we need to
+simultaneously, iteratively estimate $\beta_0^*$ and $\tilde{\phi}$. This tactic 
+apparently is common in generalized estimating equations (GEE) (\cite{zeger1988models}). 
+I have no
+experience in this area and was unable to implement the method.
+
 
 \subsubsection{Calculating $\hat{\beta_1}$}
 
@@ -122,8 +207,8 @@ The maximum quasi-likelihood estimate of $\bm{\beta}=(\beta_0, \beta_1)$ is
 given as:
 
 \begin{equation}
-\sum_{i=1}^2 \sum_{j=1}^{n_i} \bm{D}'_{ij} \tilde{V}_{ij}^{-1}(Y_{ij}-\mu_{ij})
-= \bm{0}
+	\sum_{i=1}^2 \sum_{j=1}^{n_i} \bm{D}'_{ij} \tilde{V}_{ij}^{-1}(Y_{ij}-\mu_{ij})
+	= \bm{0}
 \end{equation}
 
 where 
@@ -134,7 +219,8 @@ $$
 
 Although not directly stated, we will trust that these functions are convex (if
 not, the resultant estimates are not unique). This system of equations can be numerically solved using the 
-Newton-Raphson algorithm but first we must obtain a more tractable form. Since $\mu_{ij} = T_{ij}\lambda_i$,
+Newton-Raphson algorithm but first we must obtain a more tractable form. Since
+$\mu_{ij} = T_{ij}\lambda_i = T_{ij}\exp{(\beta_0 + \beta_1 X_{ij})}$,
 
 $$
 \frac{\partial \mu_{ij}}{\partial \beta_0} = T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}
@@ -145,7 +231,9 @@ $$
 
 For $\tilde{V}_{ij}$, we will only concern ourselves with the working variance
 function of form $\tilde{V}_{ij} = \tilde{\phi} \mu_{ij} =
-\tilde{\phi} T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}$. Plugging everything back into
+\tilde{\phi} T_{ij} \exp{(\beta_0 + \beta_1 X_{ij})}$ because this results in
+answers not dependent on the working variance function, which per the previous
+section we failed to estimate. Plugging everything back into
 (4), we have
 
 $$
@@ -224,12 +312,16 @@ Thus, the Newton-Raphson algorithm for finding $\hat{\bm{\beta}}$ is (omitting t
 
 \normalsize
 
-\subsection{Calculating $\hat{W}_0$}
+I implemented this method in C but obtained a non-invertible matrix. I was
+unable to ascertain whether this is a failure in my math or in my coding.
 
-It turns out that calculating $\hat{W}_0$ requires $\hat{\tilde{\phi}}^*$, the
-estimate of the dispersion parameter of the working variance function under the null hypothesis.
-This paper only deals with the working variance function $V=\phi \mu$;
-\cite{igeta2018} only provide a method for calculating $V = \mu + \phi \mu^2$.
+\subsubsection{Generating Overdispersed Data}
+
+To replicate Table 2 in \cite{igeta2018}, we must generate over-dispersed data
+according to some true variance function. We do so using the negative binomial
+distribution. We need to identify the correct parameters $p$ and $r$ for the negative
+binomial distribution that will result in the desired mean and variance. I
+successfully did so with my program for a few values.
 
 \section{Software Program}
 
@@ -262,64 +354,36 @@ working variance functions and effect sizes. If the empirical power $1 - \bar{\b
 matches the asymptotic power across all specifications, we conclude that the claims of
 \cite{igeta2018} are correct and that their methods are robust.
 
+My software program failed to achieve the above.
+
 \subsection{Technical Details}
 
-The software program carries out the testing strategy outlined above. Source code is contained in \texttt{final.c}. 
-The program requires the GNU Scientific Library (GSL), an
-open-source numerical library. It can be obtained from
-\url{www.gnu.org/software/gsl}; or, it can installed from most standard Linux
-package managers. An example command to achieve the latter is:
-
-\begin{center}
-	\texttt{sudo apt-get install gsl-bin libgsl-dev}
-\end{center}
-
-Compilation of \texttt{final.c} is best achieved in two steps. First, use the below
-command to compile the program but not link it. You may need to change the
-argument passed to the \texttt{-I} flag to wherever the \texttt{gsl} header
-files live on your computer. 
-
-\begin{center}
-	\texttt{gcc -I/usr/include -c final.c}
-\end{center}
-
-This command should create an object file \texttt{final.o}. Link this 
-object file to relevant libraries with the following command.
-You may need to change the argument passed to the \texttt{-L} flag to
-wherever \texttt{libgsl} lives on your computer.
-
-\begin{center}
-	\texttt{gcc -L/usr/lib final.o -o final -lgsl -lgslcblas -lm}
-\end{center}
-
-Once successfully compiled, the program can be executed. It does not require any
-arguments. Output is comma-separated text printed to \texttt{stdout}. You likely want to pipe this
-output to a text file, as per the following command:
-
-\begin{center}
-	\texttt{./final > output.csv}
-\end{center}
+[Deleted instructions on compilation, running, etc. because the program does
+not work]
 
 \section{Simulation Study}
 
-\subsection{Settings}
-
-The rate of event incidence in the control group, $\lambda_1$, is 1.25.
-Equivalently, this corresponds to $\beta_0 = 0.22314$ in $\exp{(\beta_0)}$. The
-allocation ratio is equal across groups (i.e. $q_1 = q_2 = 0.5$). The follow-up
-period $\tau$ is 1 year. Some subjects drop out early. Time to dropout follows
-an exponential distribution with parameter value 0.356, such that about 30\% of
-subjects drop out early. So in practice the observed follow-up time $T$ is the
-miniimum of time to dropout and $\tau$.
-
-The tested values for true relative risk (effect size) $\exp{(\beta_1)}$ are $\exp{(\beta_1)} = \frac{\lambda_2}{\lambda_1}
-= 0.4 | 0.6 | 0.8$. The desired power is 90\% across all specifications. 
-The power for a particular true effect size (per above) is calculated using (2). 
-The number of observations is computed using (3).
-
-The true variance function is 
+[Was unable to carry out simulation study]
 
 \section{Conclusion}
+
+I have succeeded with all previous assignments in this class and so this
+result was disappointing. The chief lesson I took from this assignment was the
+importance of effective communication. The authors clearly intended for their
+work to be practical and useful: the method applies to a problem commonly
+encountered in industry, derivation of theorems is omitted from the main body of
+the paper, and in general it seemed like the focus was on giving statisticians a
+tool to solve a problem. But the poor quality of presentation means that the
+target audience---working statisticians---probably will ignore the paper. It
+takes too much time and effort to decipher the paper and fill in the gaps left
+by the authors. In contrast, many of the most-cited statistics papers of all
+time are very easy to read. \cite{bootstrap} and \cite{dempster1977maximum} are
+good examples. This is not a coincidence: the clarity of these papers is part of
+why their methods (bootstrap and EM, respectively) became so popular. One can
+quickly read and grasp these methods and apply them to a problem; in contrast, \cite{igeta2018}
+requires a big investment and working through the paper. I think
+this is a valuable lesson to keep in mind. Effective communication of a method
+matters just as much as its formal correctness.
 
 \printbibliography[heading=bibnumbered]
 

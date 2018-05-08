@@ -19,6 +19,74 @@
 
 \refsection{0}
   \datalist[entry]{nty/global//global/global}
+    \entry{dempster1977maximum}{article}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,uniquepart=base,hash=c18375ea1ba8e363b60b42c12d33efb9}{%
+           family={Dempster},
+           familyi={D\bibinitperiod},
+           given={Arthur},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=004dd19b3643f6c3a34f8dada1f40c61}{%
+           family={Laird},
+           familyi={L\bibinitperiod},
+           given={Nan},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=39a7db9b46f7d09bf73ea233779d88a5}{%
+           family={Rubin},
+           familyi={R\bibinitperiod},
+           given={Donald},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b00c76daf37ec34c80e410a229a59844}
+      \strng{fullhash}{b00c76daf37ec34c80e410a229a59844}
+      \strng{bibnamehash}{b00c76daf37ec34c80e410a229a59844}
+      \strng{authorbibnamehash}{b00c76daf37ec34c80e410a229a59844}
+      \strng{authornamehash}{b00c76daf37ec34c80e410a229a59844}
+      \strng{authorfullhash}{b00c76daf37ec34c80e410a229a59844}
+      \field{sortinit}{D}
+      \field{sortinithash}{2ef1bd9a78cc71eb74d7231c635177b8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{year}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the royal statistical society. Series B (methodological)}
+      \field{title}{Maximum likelihood from incomplete data via the EM algorithm}
+      \field{year}{1977}
+      \field{pages}{1\bibrangedash 38}
+      \range{pages}{38}
+    \endentry
+    \entry{bootstrap}{article}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,uniquepart=base,hash=5470455fc7dceb3ccf6db38cb22a113d}{%
+           family={Efron},
+           familyi={E\bibinitperiod},
+           given={Bradley},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{5470455fc7dceb3ccf6db38cb22a113d}
+      \strng{fullhash}{5470455fc7dceb3ccf6db38cb22a113d}
+      \strng{bibnamehash}{5470455fc7dceb3ccf6db38cb22a113d}
+      \strng{authorbibnamehash}{5470455fc7dceb3ccf6db38cb22a113d}
+      \strng{authornamehash}{5470455fc7dceb3ccf6db38cb22a113d}
+      \strng{authorfullhash}{5470455fc7dceb3ccf6db38cb22a113d}
+      \field{sortinit}{E}
+      \field{sortinithash}{f615fb9c6fba11c6f962fb3fd599810e}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{year}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Ann. Statist.}
+      \field{number}{1}
+      \field{title}{Bootstrap methods: another look at the jackknife}
+      \field{volume}{7}
+      \field{year}{1979}
+      \field{pages}{1\bibrangedash 26}
+      \range{pages}{26}
+    \endentry
     \entry{igeta2018}{article}{}
       \name{author}{3}{}{%
         {{uniquename=0,uniquepart=base,hash=e1737ad651b4ac03a9fe336a8553476b}{%
@@ -58,6 +126,48 @@
       \verb{doi}
       \verb 10.111/biom.12878
       \endverb
+    \endentry
+    \entry{zeger1988models}{article}{}
+      \name{author}{3}{}{%
+        {{uniquename=0,uniquepart=base,hash=d34f1fe8ed77bbefdc65d0b2b0993f04}{%
+           family={Zeger},
+           familyi={Z\bibinitperiod},
+           given={Scott\bibnamedelima L},
+           giveni={S\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=3259647b1e22a631b8fee654fb161889}{%
+           family={Liang},
+           familyi={L\bibinitperiod},
+           given={Kung-Yee},
+           giveni={K\bibinithyphendelim Y\bibinitperiod},
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=96acc7dcececb8b34f2b73e6c8513189}{%
+           family={Albert},
+           familyi={A\bibinitperiod},
+           given={Paul\bibnamedelima S},
+           giveni={P\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {JSTOR}%
+      }
+      \strng{namehash}{dfeed7b4f7c62cedb2640bcf96716e40}
+      \strng{fullhash}{dfeed7b4f7c62cedb2640bcf96716e40}
+      \strng{bibnamehash}{dfeed7b4f7c62cedb2640bcf96716e40}
+      \strng{authorbibnamehash}{dfeed7b4f7c62cedb2640bcf96716e40}
+      \strng{authornamehash}{dfeed7b4f7c62cedb2640bcf96716e40}
+      \strng{authorfullhash}{dfeed7b4f7c62cedb2640bcf96716e40}
+      \field{sortinit}{Z}
+      \field{sortinithash}{156173bd08b075d7295bc3e0f4735a04}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{year}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biometrics}
+      \field{title}{Models for longitudinal data: a generalized estimating equation approach}
+      \field{year}{1988}
+      \field{pages}{1049\bibrangedash 1060}
+      \range{pages}{12}
     \endentry
   \enddatalist
 \endrefsection
