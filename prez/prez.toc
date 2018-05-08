@@ -1,0 +1,5 @@
+\beamer@sectionintoc {1}{Background}{2}{0}{1}
+\beamer@sectionintoc {2}{Methods}{6}{0}{2}
+\beamer@sectionintoc {3}{Implementation in C}{9}{0}{3}
+\beamer@sectionintoc {4}{Simulation Study}{14}{0}{4}
+\beamer@sectionintoc {5}{Conclusion}{17}{0}{5}
